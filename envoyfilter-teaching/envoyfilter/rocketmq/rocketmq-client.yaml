@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rocketmq
+  labels:
+    name: rocketmq
+spec:
+  containers:
+  - name: nginx
+    image: registry.cn-hangzhou.aliyuncs.com/hxpdocker/rocketmq-demo:latest
+    imagePullPolicy: Always    

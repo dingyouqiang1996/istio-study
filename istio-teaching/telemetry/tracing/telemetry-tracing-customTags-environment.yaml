@@ -1,0 +1,16 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: telemetry-productpage
+spec:
+  selector:
+    matchLabels:
+      app: productpage
+  tracing:
+  - providers:
+    - name: "zipkin"
+    customTags:
+      test:
+        environment:
+          name: myenv
+          defaultValue: test

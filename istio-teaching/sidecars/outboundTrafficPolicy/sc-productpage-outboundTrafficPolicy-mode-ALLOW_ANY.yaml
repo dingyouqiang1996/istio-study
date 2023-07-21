@@ -1,0 +1,10 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: sleep
+spec:
+  workloadSelector:
+    labels:
+      app: sleep
+  outboundTrafficPolicy:
+    mode: ALLOW_ANY

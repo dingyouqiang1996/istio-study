@@ -1,0 +1,26 @@
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: HTTPRoute
+metadata:
+  name: bookinfo
+spec:
+  parentRefs:
+  - name: bookinfo
+    namespace: istio-system
+    group: gateway.networking.k8s.io
+    kind: Gateway
+  rules:
+  - matches:
+    - path: 
+        type: PathPrefix
+        value: /
+    filters:
+    - requestHeaderModifier:
+        set:
+        - name: test1
+          value: value1
+        - name: test2
+          value: value2
+      type: RequestHeaderModifier
+    backendRefs:
+    - name: productpage
+      port: 9080

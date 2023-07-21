@@ -1,0 +1,36 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: cluster
+  namespace: istio-system 
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      cluster:
+        name: outbound|9080||productpage.istio.svc.cluster.local
+    patch:
+      operation: MERGE
+      value:
+          alt_stat_name: test
+          connect_timeout: 20s
+          per_connection_buffer_limit_bytes: 32768
+          max_requests_per_connection: 1024
+          #wait_for_warm_on_init:  only applicable for STRICT_DNS, or LOGICAL_DNS.
+          cleanup_interval: 5000ms
+          upstream_bind_config:
+            source_address:
+              address: 0.0.0.0
+              port_value: 9080
+              protocol: TCP
+              ipv4_compat: true
+            freebind: true
+            socket_options: []
+          #protocol_selection: 废弃
+          close_connections_on_host_health_failure: true
+          ignore_health_on_host_removal: true
+          track_timeout_budgets: true
+          connection_pool_per_downstream_connection: true

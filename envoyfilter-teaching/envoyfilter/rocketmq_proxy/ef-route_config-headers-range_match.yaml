@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rocketmq
+spec:
+  workloadSelector:
+    labels:
+      name: rocketmq
+  configPatches:
+  - applyTo: LISTENER
+    match:
+      context: SIDECAR_OUTBOUND
+    patch:
+      operation: ADD
+      value:
+        name: rocketmq
+        address:
+          socket_address:
+            protocol: TCP
+            address: 0.0.0.0
+            port_value: 10911
+        traffic_direction: "OUTBOUND"
+        bind_to_port: false
+        filter_chains:
+        - filters:
+          - name: envoy.filters.network.rocketmq_proxy
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.rocketmq_proxy.v3.RocketmqProxy
+              stat_prefix: rocketmq
+              route_config:
+                name: rocketmq
+                routes:
+                - match:
+                    headers:
+                    - name: MQ
+                      range_match:
+                        start: 1
+                        end: 100
+                  route:
+                    cluster: outbound|10911||broker-0.default.svc.cluster.local
+                - match:
+                    headers:
+                    - name: MQ
+                      exact_match: user_mq2
+                  route:
+                    cluster: outbound|10911||broker-1.default.svc.cluster.local

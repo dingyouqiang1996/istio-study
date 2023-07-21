@@ -1,0 +1,30 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: bookinfo
+spec:
+  revertOnDeletion: true
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: reviews-v1
+  service:
+    port: 9080
+    gateways:
+    - istio/bookinfo-gateway
+    hosts:
+    - "*"
+  analysis:
+    interval: 1m
+    threshold: 10
+    maxWeight: 50
+    stepWeight: 5
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 1m

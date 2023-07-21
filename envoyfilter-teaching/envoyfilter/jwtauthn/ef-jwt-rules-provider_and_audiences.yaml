@@ -1,0 +1,52 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: jwt
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  priority: 20
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.jwt_authn
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+            providers:
+              origins-0:
+                audiences:
+                - test
+                jwt_cache_config:
+                  jwt_cache_size: 100
+                forward: true
+                issuer: testing@secure.istio.io
+                remote_jwks:
+                  http_uri: 
+                    uri: jwt-server.istio.svc.cluster.local:8080
+                    cluster: outbound|8080||jwt-server.istio.svc.cluster.local
+                    timeout: 1s
+                  retry_policy:
+                    retry_back_off:
+                      base_interval: 0.01s
+                      max_interval: 20s
+                    num_retries: 10
+                  cache_duration: 60s
+            rules:
+            - match:
+                prefix: /
+              requires:
+                provider_and_audiences:
+                  provider_name: origins-0
+                  audiences:
+                  - app

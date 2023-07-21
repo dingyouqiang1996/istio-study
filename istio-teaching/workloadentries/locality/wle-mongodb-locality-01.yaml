@@ -1,0 +1,11 @@
+apiVersion: networking.istio.io/v1beta1
+kind: WorkloadEntry
+metadata:
+  name: mongo-wle-01
+spec:
+  address: 192.168.198.154
+  labels:
+    app: mongodb
+    instance-id: vm1
+    type: vm
+  locality: "us-central1/z1/sz01"

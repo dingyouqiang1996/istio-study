@@ -1,0 +1,172 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: emailservice
+spec:
+  hosts:
+  - "emailservice"
+  http:
+  - route:
+    - destination:
+        host: emailservice
+        subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: checkout
+spec:
+  hosts:
+  - "checkoutservice"
+  http:
+  - match:
+    - headers:
+        version:
+          exact: v2
+      uri:
+        prefix: /
+    route:
+    - destination:
+        host: checkoutservice-canary
+  - match:
+    - headers:
+        version:
+          exact: v1
+      uri:
+        prefix: /
+    delegate:
+      name: checkoutservice
+      namespace: demo-01
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: recommendation
+spec:
+  hosts:
+  - "recommendationservice"
+  http:
+  - match:
+    - headers:
+        version:
+          exact: v2
+      uri:
+        prefix: /
+    route:
+    - destination:
+        host: recommendationservice-canary
+  - match:
+    - headers:
+        version:
+          exact: v1
+      uri:
+        prefix: /
+    delegate:
+      name: recommendationservice
+      namespace: demo-01
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: payment
+spec:
+  hosts:
+  - "paymentservice"
+  http:
+  - match:
+    - headers:
+        version:
+          exact: v2
+      uri:
+        prefix: /
+    route:
+    - destination:
+        host: paymentservice-canary
+  - match:
+    - headers:
+        version:
+          exact: v1
+      uri:
+        prefix: /
+    delegate:
+      name: paymentservice
+      namespace: demo-01
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: productcatalogservice
+spec:
+  hosts:
+  - "productcatalogservice"
+  http:
+  - route:
+    - destination:
+        host: productcatalogservice
+        subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: cartservice
+spec:
+  hosts:
+  - "cartservice"
+  http:
+  - route:
+    - destination:
+        host: cartservice
+        subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: currencyservice
+spec:
+  hosts:
+  - "currencyservice"
+  http:
+  - route:
+    - destination:
+        host: currencyservice
+        subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: shippingservice
+spec:
+  hosts:
+  - "shippingservice"
+  http:
+  - route:
+    - destination:
+        host: shippingservice
+        subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: redis-cart
+spec:
+  hosts:
+  - "redis-cart"
+  http:
+  - route:
+    - destination:
+        host: redis-cart
+        subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: adservice
+spec:
+  hosts:
+  - "adservice"
+  http:
+  - route:
+    - destination:
+        host: adservice
+        subset: v1
+---

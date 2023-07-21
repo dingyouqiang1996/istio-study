@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: apply-to
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: ROUTE_CONFIGURATION
+    match:
+      context: ANY
+      routeConfiguration:
+        name: http.80
+    patch:
+      operation: MERGE
+      value:
+            name: http.80
+            virtual_hosts:
+            - name: "*:80"
+              domains:
+              - "*"
+              cors:
+                allow_methods: "GET,POST,OPTIONS"
+                allow_headers: "content-type"
+                max_age: "60"
+                allow_origin_string_match:
+                - exact: "http://mytest.com:8081"
+                filter_enabled:
+                  default_value:
+                    numerator: 100
+                    denominator: HUNDRED

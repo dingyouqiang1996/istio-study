@@ -1,0 +1,59 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: grpc
+spec:
+  workloadSelector:
+    labels:
+      app: wind-client
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+        context: SIDECAR_OUTBOUND
+        listener:
+          name: 0.0.0.0_50052
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+    patch:
+        operation: MERGE
+        value:   
+          name: envoy.filters.network.http_connection_manager
+          typedConfig:
+              '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stat_prefix: grpc_json
+              codec_type: AUTO
+              route_config:
+                name: local_route
+                virtual_hosts:
+                - name: local_service
+                  domains: ["*"]
+                  routes:
+                  - match:
+                      prefix: "/wind_power.WindServer"
+                    route: 
+                      cluster: outbound|50052||wind-server.istio.svc.cluster.local
+                      timeout: 60s
+  - applyTo: HTTP_FILTER
+    match:
+        context: SIDECAR_OUTBOUND
+        listener:
+          name: 0.0.0.0_50052
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.router
+    patch:
+        operation: INSERT_BEFORE
+        value:   
+                name: envoy.filters.http.grpc_json_transcoder
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
+                  proto_descriptor: "/etc/envoy/proto.pb"
+                  services: ["wind_power.WindServer"]
+                  print_options:
+                    add_whitespace: true
+                    always_print_primitive_fields: true
+                    always_print_enums_as_ints: false
+                    preserve_proto_field_names: false

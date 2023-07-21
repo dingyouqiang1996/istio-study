@@ -1,0 +1,9 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: tracing
+spec:
+  tracing:
+  - disableSpanReporting: true
+    providers:
+    - name: zipkin

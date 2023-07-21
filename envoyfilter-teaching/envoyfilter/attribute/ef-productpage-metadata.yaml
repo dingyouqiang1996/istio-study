@@ -1,0 +1,48 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: metadata
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  priority: 10
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          destinationPort: 9080
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: REPLACE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: "inbound_0.0.0.0_9080"
+                route_config:
+                  name: test
+                  virtual_hosts:
+                  - name: test
+                    domains:
+                    - "*"
+                    routes:
+                    - name: testroute
+                      match: 
+                        prefix: /
+                      metadata:
+                        filter_metadata:
+                          "envoy.lb": 
+                            canary: true
+                      route:
+                        cluster: inbound|9080||
+                        timeout: "0s"
+                        max_stream_duration:
+                          max_stream_duration: "0s"
+                http_filters:
+                - name: "envoy.filters.http.router"
+                  typed_config:
+                    "@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router"

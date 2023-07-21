@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gatewaysdfsdf
+metadatafssd:
+  name: bookinfo-gateway
+specssdfdsf:
+  selectorsdfdsfs:
+    istio: ingressgateway
+  serverssfdsdf:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"

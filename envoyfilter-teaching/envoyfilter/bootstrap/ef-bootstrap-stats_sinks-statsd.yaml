@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ef-bootstrap
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+          stats_sinks:
+          - name: StatsdSink
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
+              address: 
+                socket_address:
+                  address: 192.168.229.111
+                  port_value: 9999
+              prefix: productpage

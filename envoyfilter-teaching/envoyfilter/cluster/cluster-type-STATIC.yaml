@@ -1,0 +1,53 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: cluster
+  namespace: istio-system 
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                route_config:
+                  name: test
+                  virtual_hosts:
+                  - name: test
+                    domains:
+                    - "www.baidu.demo:30563"
+                    routes:
+                    - name: testroute
+                      match: 
+                        path: /
+                      route:
+                        cluster: static-cluster
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value:
+        name: static-cluster
+        connect_timeout: 0.25s
+        type: STATIC
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: static-cluster
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: 36.152.44.95
+                    port_value: 80

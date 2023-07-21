@@ -1,0 +1,28 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: wasm
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+          stats_sinks:
+          - name: envoy.stat_sinks.wasm
+            typed_config:
+                "@type": type.googleapis.com/envoy.extensions.stat_sinks.wasm.v3.Wasm
+                config:
+                  name: my_plugin
+                  configuration:
+                    "@type": type.googleapis.com/google.protobuf.StringValue
+                    value: |
+                      {}
+                  vm_config:
+                    runtime: "envoy.wasm.runtime.v8"
+                    code:
+                      local:
+                        filename: /var/local/lib/wasm-filters/main.wasm

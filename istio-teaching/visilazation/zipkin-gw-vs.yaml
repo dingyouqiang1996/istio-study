@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: zipkin-gateway
+spec:
+  selector:
+    istio: eastwestgateway
+  servers:
+    - port:
+        name: http-zipkin
+        number: 15018
+        protocol: http        
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: zipkin-vs
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - zipkin-gateway
+  http:
+  - route:
+    - destination:
+        host: zipkin.istio-system.svc.cluster.local
+        port:
+          number: 9411

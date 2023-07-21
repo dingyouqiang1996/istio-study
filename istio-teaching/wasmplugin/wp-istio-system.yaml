@@ -1,0 +1,8 @@
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  url: oci://registry.cn-qingdao.aliyuncs.com/hxpdocker/wasm-rate-limiting:v1
+  phase: STATS	

@@ -1,0 +1,36 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: header-to-metadata 
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_FIRST
+      value: 
+        name: envoy.filters.http.header_to_metadata
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.header_to_metadata.v3.Config
+          request_rules:
+            - header: ":path"
+              on_header_present:
+                metadata_namespace: envoy.lb
+                key: cluster
+                regex_value_rewrite:
+                  pattern:
+                    google_re2: {}
+                    regex: "^/(cluster[\\d\\w-]+)/?.*$"
+                  substitution: "\\1"
+

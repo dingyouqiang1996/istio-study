@@ -1,0 +1,12 @@
+apiVersion: networking.istio.io/v1beta1
+kind: WorkloadEntry
+metadata:
+  name: httpd
+spec:
+  address: 192.168.198.131
+  labels:
+    app: httpd
+    instance-id: vm1
+    type: vm
+  ports:
+    http: 80

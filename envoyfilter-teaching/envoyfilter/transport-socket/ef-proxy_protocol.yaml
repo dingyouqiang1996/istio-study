@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: proxy-protocol
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: LISTENER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        name: virtualInbound
+    patch:
+      operation: MERGE
+      value:
+        listener_filters:
+        - name: envoy.filters.listener.proxy_protocol
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
+              

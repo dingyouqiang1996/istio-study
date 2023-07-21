@@ -1,0 +1,18 @@
+apiVersion: wasme.io/v1
+kind: FilterDeployment
+metadata:
+  labels:
+    app: wasme
+  name: add-header
+  namespace: istio
+spec:
+  deployment:
+    istio:
+      kind: Deployment
+      labels:
+        app: productpage
+  filter:
+    config:
+      '@type': type.googleapis.com/google.protobuf.StringValue
+      value: world
+    image: webassemblyhub.io/hxpmark/add-header:v0.0.1

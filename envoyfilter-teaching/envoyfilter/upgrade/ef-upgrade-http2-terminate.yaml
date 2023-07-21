@@ -1,0 +1,70 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: upgrade
+  namespace: istio 
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: LISTENER
+    match:
+      context: SIDECAR_OUTBOUND
+    patch:
+      operation: ADD
+      value:
+        name: listener_0
+        address:
+          socket_address:
+            protocol: TCP
+            address: 127.0.0.1
+            port_value: 10001
+        filter_chains:
+        - filters:
+          - name: envoy.filters.network.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              stat_prefix: ingress_http
+              route_config:
+                name: local_route
+                virtual_hosts:
+                - name: local_service
+                  domains:
+                  - "*"
+                  routes:
+                  - match:
+                      connect_matcher:
+                        {}
+                    route:
+                      cluster: service_google
+                      upgrade_configs:
+                      - upgrade_type: CONNECT
+                        connect_config:
+                          {}
+              http_filters:
+              - name: envoy.filters.http.router
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+              http2_protocol_options:
+                allow_connect: true
+              upgrade_configs:
+              - upgrade_type: CONNECT
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value: 
+        name: service_google
+        connect_timeout: 0.25s
+        type: LOGICAL_DNS
+        dns_lookup_family: V4_ONLY
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: service_google
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: www.google.com
+                    port_value: 443

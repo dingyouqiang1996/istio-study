@@ -1,0 +1,233 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: request-header-v1
+spec:
+  workloadSelector:
+    labels:
+      line: front-v1
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: istio.stats
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          value:
+            config:
+              configuration:
+                '@type': type.googleapis.com/google.protobuf.StringValue
+                value: |
+                  {
+                    "header_key":"version",
+                    "header_value":"v1"
+                  }
+              root_id: version_v1
+              vm_config:
+                allow_precompiled: true
+                code:
+                  local:
+                    filename: /var/local/lib/wasm-filters/request_header.wasm
+                runtime: envoy.wasm.runtime.v8
+                vm_id: version_v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: request-header-v2
+spec:
+  workloadSelector:
+    labels:
+      line: front-v2
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: istio.stats
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          value:
+            config:
+              configuration:
+                '@type': type.googleapis.com/google.protobuf.StringValue
+                value: |
+                  {
+                    "header_key":"version",
+                    "header_value":"v2"
+                  }
+              root_id: version_v2
+              vm_config:
+                allow_precompiled: true
+                code:
+                  local:
+                    filename: /var/local/lib/wasm-filters/request_header.wasm
+                runtime: envoy.wasm.runtime.v8
+                vm_id: version_v2
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: request-header-line-v1
+spec:
+  workloadSelector:
+    labels:
+      line: v1
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: istio.stats
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          value:
+            config:
+              configuration:
+                '@type': type.googleapis.com/google.protobuf.StringValue
+                value: |
+                  {
+                    
+                  }
+              root_id: inbound_v1
+              vm_config:
+                allow_precompiled: true
+                code:
+                  local:
+                    filename: /var/local/lib/wasm-filters-2/inbound.wasm
+                runtime: envoy.wasm.runtime.v8
+                vm_id: inbound_outbound_v1
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: istio.stats
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          value:
+            config:
+              configuration:
+                '@type': type.googleapis.com/google.protobuf.StringValue
+                value: |
+                  {
+                  }
+              root_id: outbound-v1
+              vm_config:
+                allow_precompiled: true
+                code:
+                  local:
+                    filename: /var/local/lib/wasm-filters-3/outbound.wasm
+                runtime: envoy.wasm.runtime.v8
+                vm_id: inbound_outbound_v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: request-header-line-v2
+spec:
+  workloadSelector:
+    labels:
+      line: v2
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: istio.stats
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          value:
+            config:
+              configuration:
+                '@type': type.googleapis.com/google.protobuf.StringValue
+                value: |
+                  {
+                    
+                  }
+              root_id: inbound_v2
+              vm_config:
+                allow_precompiled: true
+                code:
+                  local:
+                    filename: /var/local/lib/wasm-filters-2/inbound.wasm
+                runtime: envoy.wasm.runtime.v8
+                vm_id: inbound_outbound_v2
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        filterChain:
+          filter:
+            name: envoy.filters.network.http_connection_manager
+            subFilter:
+              name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: istio.stats
+        typed_config:
+          '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          value:
+            config:
+              configuration:
+                '@type': type.googleapis.com/google.protobuf.StringValue
+                value: |
+                  {
+                  }
+              root_id: outbound-v2
+              vm_config:
+                allow_precompiled: true
+                code:
+                  local:
+                    filename: /var/local/lib/wasm-filters-3/outbound.wasm
+                runtime: envoy.wasm.runtime.v8
+                vm_id: inbound_outbound_v2
+

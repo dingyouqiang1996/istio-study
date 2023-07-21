@@ -1,0 +1,19 @@
+FROM alpine:latest
+
+RUN apk update && apk add python3-dev
+RUN apk add py3-pip
+RUN apk add gcc g++ linux-headers
+RUN python3 -m  pip install -q google-api-python-client
+RUN python3 -m  pip install -q grpcio
+RUN python3 -m  pip install -q grpcio-tools
+
+RUN mkdir /code
+ADD ./wind_pb2_grpc.py  wind_pb2.py    /code/proto/
+
+ADD ./wind_pb2_grpc.py  wind_pb2.py  wind_predict_client.py proto.pb /code/
+
+ADD proto.pb  /etc/envoy/
+
+WORKDIR /code/
+CMD ["python3", "./wind_predict_client.py"]
+

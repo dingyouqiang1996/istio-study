@@ -1,0 +1,9 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dr-mongodb
+spec:
+  host: mongodb.vm.demo
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN

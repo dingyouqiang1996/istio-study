@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-nginx-canary
+spec:
+  ports:
+  - name: https-canary
+    port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    run: my-nginx

@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  labels:
+    app: zookeeper
+    service: zookeeper
+spec:
+  ports:
+  - port: 2181
+    name: zookeeper
+  selector:
+    app: zookeeper
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  labels:
+    app: zookeeper
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        version: v1
+    spec:
+      containers:
+      - name: zookeeper 
+        image: docker.io/zookeeper:3.7.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 2181

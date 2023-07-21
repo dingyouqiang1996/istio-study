@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: apply-to
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        portNumber: 3306
+    patch:
+      operation: REMOVE
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        portNumber: 3306
+    patch:
+      operation: ADD
+      value:
+            name: envoy.filters.network.echo
+            typed_config:
+              "@type": "type.googleapis.com/envoy.extensions.filters.network.echo.v3.Echo"

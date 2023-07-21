@@ -1,0 +1,40 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ef-bootstrap
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+          watchdogs:
+            main_thread_watchdog:
+              actions:
+              - event: KILL
+              - event: MULTIKILL
+              - event: MEGAMISS
+              - event: MISS
+              miss_timeout: 30s
+              megamiss_timeout: 20s
+              kill_timeout: 10s
+              max_kill_timeout_jitter: 20s
+              multikill_timeout: 20s
+              multikill_threshold: 
+                value: 70
+            worker_watchdog:
+              actions:
+              - event: KILL
+              - event: MULTIKILL
+              - event: MEGAMISS
+              - event: MISS
+              miss_timeout: 30s
+              megamiss_timeout: 20s
+              kill_timeout: 10s
+              max_kill_timeout_jitter: 20s
+              multikill_timeout: 20s
+              multikill_threshold: 
+                value: 70

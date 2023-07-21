@@ -1,0 +1,75 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: envoyfilter-dubbo-proxy
+spec:
+  workloadSelector:
+    labels:
+      app: dubbo-hello-consumer
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        name: 10.68.242.66_20880
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: REPLACE
+      value:
+        name: envoy.filters.network.dubbo_proxy
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy
+          stat_prefix: outbound|20880||org.example.api
+          protocol_type: Dubbo
+          serialization_type: Hessian2
+          route_config:
+          - name: outbound|20880||org.example.api.IGroupService1
+            interface: org.example.api.IGroupService
+            group: group1
+            routes:
+            - match:
+                method:
+                  name:
+                    exact: dubboCallProiderService
+              route:
+                cluster: outbound|20880|v1|dubbo-hello-provider.istio.svc.cluster.local
+          - name: outbound|20880||org.example.api.IGroupService2
+            interface: org.example.api.IGroupService
+            group: group2
+            routes:
+            - match:
+                method:
+                  name:
+                    exact: dubboCallProiderService
+              route:
+                cluster: outbound|20880|v2|dubbo-hello-provider.istio.svc.cluster.local
+          - name: outbound|20880||org.example.api.IVersionService1
+            interface: org.example.api.IVersionService
+            version: 1.0.0
+            routes:
+            - match:
+                method:
+                  name:
+                    exact: dubboCallProiderService
+              route:
+                cluster: outbound|20880|v1|dubbo-hello-provider.istio.svc.cluster.local
+          - name: outbound|20880||org.example.api.IVersionService2
+            interface: org.example.api.IVersionService
+            version: 2.0.0
+            routes:
+            - match:
+                method:
+                  name:
+                    exact: dubboCallProiderService
+              route:
+                cluster: outbound|20880|v2|dubbo-hello-provider.istio.svc.cluster.local
+          - name: outbound|20880||org.example.api.ITestService
+            interface: org.example.api.ITestService
+            routes:
+            - match:
+                method:
+                  name:
+                    exact: dubboCallProiderService
+              route:
+                cluster: outbound|20880|v2|dubbo-hello-provider.istio.svc.cluster.local

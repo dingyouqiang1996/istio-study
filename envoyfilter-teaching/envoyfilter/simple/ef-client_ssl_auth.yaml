@@ -1,0 +1,47 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: simple
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 31400 
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.network.client_ssl_auth
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.network.client_ssl_auth.v3.ClientSSLAuth
+          auth_api_cluster: auth_api_cluster
+          stat_prefix: test
+          refresh_delay: 60000ms
+          ip_white_list:
+          - address_prefix: 0.0.0.0
+            prefix_len: 0
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value:
+        name: auth_api_cluster
+        connect_timeout: 0.25s
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: auth_api_cluster
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: auth
+                    port_value: 80

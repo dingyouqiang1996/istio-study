@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-client
+  labels:
+    app: redis-client
+spec:
+  selector:
+    matchLabels:
+      app: redis-client
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis-client
+    spec:
+      containers:
+      - name: redis-client
+        image: redis
+        imagePullPolicy: IfNotPresent

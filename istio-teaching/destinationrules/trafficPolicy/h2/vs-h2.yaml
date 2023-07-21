@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: bookinfo
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - bookinfo-gateway
+  http:
+  - match:
+    - uri:
+        exact: /
+    - uri:
+        exact: /data
+    route:
+    - destination:
+        host: http2.istio.svc.cluster.local
+        port:
+          number: 8443

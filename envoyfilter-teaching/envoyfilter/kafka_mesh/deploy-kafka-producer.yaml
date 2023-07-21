@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-producter
+  labels:
+    app: kafka-producter
+spec:
+  selector:
+    matchLabels:
+      app: kafka-producter
+  template:
+    metadata:
+      labels:
+        app: kafka-producter
+    spec:
+      containers:
+      - name: kafka
+        image: strimzi/kafka:0.12.2-kafka-2.2.1
+        command:
+        - bin/kafka-console-producer.sh  
+        args:
+        - "- --broker-list 127.0.0.1:29092"
+        - "- --topic my-topic"

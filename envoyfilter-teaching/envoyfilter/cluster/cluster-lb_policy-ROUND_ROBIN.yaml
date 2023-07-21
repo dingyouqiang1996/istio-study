@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: cluster
+  namespace: istio-system 
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      cluster:
+        name: outbound|9080||productpage.istio.svc.cluster.local
+    patch:
+      operation: MERGE
+      value:
+         lb_policy: ROUND_ROBIN

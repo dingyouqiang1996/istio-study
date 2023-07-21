@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: mongo
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - mongo
+  tcp:
+  - match:
+    - port: 27017
+    route:
+    - destination:
+        host: mongodb.istio.svc.cluster.local
+        port:
+          number: 27017

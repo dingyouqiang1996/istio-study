@@ -1,0 +1,15 @@
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: bookinfo
+spec:
+  parentRefs:
+  - name: bookinfo
+    namespace: istio-system
+    kind: Gateway
+    group: gateway.networking.k8s.io
+    sectionName: gw-bookinfo
+  rules:
+  - backendRefs:
+    - name: my-nginx
+      port: 443

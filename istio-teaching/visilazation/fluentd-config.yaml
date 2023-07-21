@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-config
+data:
+  fluent.conf: |
+    <source>
+      @type tail
+      format none
+      path /var/log/p.log
+      pos_file /var/log/p.log.pos
+      tag count.format1
+    </source>
+
+    <match **>
+      @type elasticsearch
+      host elasticsearch-master.efk
+      port 9200
+      include_tag_key true
+      tag_key @log_name
+      logstash_format true
+      flush_interval 10s
+    </match>

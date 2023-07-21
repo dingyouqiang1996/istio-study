@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: fault
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        portNumber: 9080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+                  name: envoy.filters.http.fault 
+                  typed_config:
+                    '@type': type.googleapis.com/envoy.extensions.filters.http.fault.v3.HTTPFault
+                    abort:
+                      httpStatus: 500
+                      percentage:
+                        denominator: MILLION
+                        numerator: 1000000

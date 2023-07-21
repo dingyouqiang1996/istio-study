@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ef-productpage-bootstrap-metadata
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+        node:
+          metadata:
+            PROXY_CONFIG:
+               "controlPlaneAuthPolicy": "MUTUAL_TLS"
+               "configPath": "./etc/istio/proxy"
+               "concurrency": 2
+               "drainDuration": "45s"
+               "tracing": 
+                  "zipkin": 
+                    "address": "zipkin.istio-system:9411"
+               "statusPort": 15020
+               "proxyAdminPort": 9999
+               "discoveryAddress": "istiod.istio-system.svc:15012"
+               "parentShutdownDuration": "60s"
+               "binaryPath": "/usr/local/bin/envoy"
+               "statNameLength": 189
+               "terminationDrainDuration": "5s"
+               "serviceCluster": "istio-proxy"

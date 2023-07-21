@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: recommendationservice
+spec:
+  host: recommendationservice
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        httpCookie:
+          name: shop_session-id
+          ttl: 0s
+  subsets:
+  - name: v1
+    labels:
+      stable: stable
+  - name: v2
+    labels:
+      canary: canary

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+data:
+  config.yaml: |
+    domain: productpage-ratelimit
+    descriptors:
+      - key: authenticated
+        value: "false"
+        rate_limit:
+          unit: minute
+          requests_per_unit: 10
+      - key: PATH
+        value: "/productpage"
+        rate_limit:
+          unit: minute
+          requests_per_unit: 1
+      - key: PATH
+        rate_limit:
+          unit: minute
+          requests_per_unit: 100

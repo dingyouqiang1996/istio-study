@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: busybox
+spec:
+  hosts:
+  - busybox
+  http:
+  - route:
+    - destination:
+        host: busybox
+        subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: busybox
+spec:
+  host: busybox
+  subsets:
+  - name: v1
+    labels:
+      run: busybox

@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: lb-passthrough
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      cluster:
+        name: outbound|9080|v1|productpage.istio.svc.cluster.local
+    patch:
+        operation: MERGE
+        value:
+          original_dst_lb_config:
+            use_http_header: true

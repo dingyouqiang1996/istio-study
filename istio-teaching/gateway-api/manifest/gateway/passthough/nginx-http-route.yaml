@@ -1,0 +1,14 @@
+kind: HTTPRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: nginx
+  labels:
+    gateway: bookinfo
+spec:
+  gateways:
+    allow: All
+  hostnames: ["*"]
+  rules:
+  - forwardTo:
+    - serviceName: my-nginx
+      port: 443

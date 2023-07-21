@@ -1,0 +1,11 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: ratings
+spec:
+  workloadSelector:
+    labels:
+      app: ratings
+  egress:
+  - hosts:
+    - "istio/details.istio.svc.cluster.local"

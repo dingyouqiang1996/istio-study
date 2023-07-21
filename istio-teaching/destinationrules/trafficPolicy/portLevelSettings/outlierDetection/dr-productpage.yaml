@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: productpage
+spec:
+  host: productpage.istio.svc.cluster.local
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  trafficPolicy:
+    portLevelSettings:
+    - port:
+        number: 9080
+      connectionPool:
+        tcp:
+          maxConnections: 10
+          connectTimeout: 30ms
+        http:
+          http2MaxRequests: 50
+          maxRequestsPerConnection: 5
+      outlierDetection:
+        consecutiveErrors: 7
+        interval: 5s
+        baseEjectionTime: 15s
+        maxEjectionPercent: 30
+        minHealthPercent: 10

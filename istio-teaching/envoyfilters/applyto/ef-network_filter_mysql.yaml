@@ -1,0 +1,54 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: apply-to
+spec:
+  workloadSelector:
+    labels:
+      app: mysqldb
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        portNumber: 3306
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.network.mysql_proxy
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.mysql_proxy.v3.MySQLProxy
+          stat_prefix: mysql
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        portNumber: 3306
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.network.rbac
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.rbac.v3.RBAC
+          stat_prefix: rbac
+          rules:
+             action: DENY
+             policies:
+               "product-viewer":
+                 permissions:
+                 - metadata:
+                     filter: envoy.filters.network.mysql_proxy
+                     path:
+                     - key: t1.test
+                     value:
+                       list_match:
+                         one_of:
+                           string_match:
+                             prefix: update
+                 principals:
+                 - any: true
+          enforcement_type: CONTINUOUS 

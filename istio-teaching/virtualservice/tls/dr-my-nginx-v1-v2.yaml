@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: my-nginx
+spec:
+  host: my-nginx
+  subsets:
+  - name: v1
+    labels:
+      run: my-nginx
+      version: v1
+  - name: v2
+    labels:
+      run: my-nginx
+      version: v2

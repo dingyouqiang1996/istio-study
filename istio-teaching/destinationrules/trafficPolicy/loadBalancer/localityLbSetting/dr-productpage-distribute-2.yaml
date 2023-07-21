@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: productpage
+spec:
+  host: productpage.istio.svc.cluster.local
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  trafficPolicy:
+    loadBalancer:
+      localityLbSetting:
+        enabled: true
+        distribute:
+        - from: "us-central1/z1/*"
+          to:
+            "us-central3/z3/*": 50
+            "us-central2/z2/*": 50
+    outlierDetection:
+      consecutive5xxErrors: 1
+      interval: 5m
+      baseEjectionTime: 15m

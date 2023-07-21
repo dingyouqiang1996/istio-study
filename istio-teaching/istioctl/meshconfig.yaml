@@ -1,0 +1,11 @@
+accessLogFile: /dev/stdout
+defaultConfig:
+  discoveryAddress: istiod.istio-system.svc:15012
+  meshId: mesh1
+  proxyMetadata: {}
+  tracing:
+    zipkin:
+      address: zipkin.istio-system:9411
+enablePrometheusMerge: true
+rootNamespace: istio-system
+trustDomain: cluster.local

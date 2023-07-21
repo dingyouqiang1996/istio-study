@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    match: 
+      cluster:
+        name: outbound|9080||productpage.istio.svc.cluster.local
+    patch:
+      operation: MERGE
+      value: 
+          circuitBreakers:
+            thresholds:
+            - maxConnections: 114
+              maxPendingRequests: 116
+              maxRequests: 118
+              maxRetries: 117
+              trackRemaining: true
+              priority: HIGH
+          connectTimeout: 0.030s
+          upstreamConnectionOptions:
+            tcpKeepalive:
+              keepaliveInterval: 75
+              keepaliveProbes: 10
+              keepaliveTime: 7200
+          typed_extension_protocol_options:
+            envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+              "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions"
+              common_http_protocol_options:
+                max_requests_per_connection: 115
+              explicit_http_config:
+                http_protocol_options: {}
+

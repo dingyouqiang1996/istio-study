@@ -1,0 +1,102 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      cluster:
+        portNumber: 9080
+        name: outbound|9080||productpage.istio.svc.cluster.local
+    patch:
+      operation: REMOVE
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value: 
+          circuitBreakers:
+            thresholds:
+            - maxConnections: 115
+              maxPendingRequests: 115
+              maxRequests: 115
+              maxRetries: 115
+              trackRemaining: true
+          connectTimeout: 0.030s
+          edsClusterConfig:
+            edsConfig:
+              ads: {}
+              initialFetchTimeout: 0s
+              resourceApiVersion: V3
+            serviceName: outbound|9080||productpage.istio.svc.cluster.local
+          filters:
+          - name: istio.metadata_exchange
+            typedConfig:
+              '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+              typeUrl: type.googleapis.com/envoy.tcp.metadataexchange.config.MetadataExchange
+              value:
+                protocol: istio-peer-exchange
+          maxRequestsPerConnection: 115
+          metadata:
+            filterMetadata:
+              istio:
+                default_original_port: 9080
+                services:
+                  host: productpage.istio.svc.cluster.local
+                  name: productpage
+                  namespace: istio
+          name: outbound|9080||productpage.istio.svc.cluster.local
+          transportSocketMatches:
+          - match:
+              tlsMode: istio
+            name: tlsMode-istio
+            transportSocket:
+              name: envoy.transport_sockets.tls
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+                commonTlsContext:
+                  alpnProtocols:
+                  - istio-peer-exchange
+                  - istio
+                  combinedValidationContext:
+                    defaultValidationContext:
+                      matchSubjectAltNames:
+                      - exact: spiffe://cluster.local/ns/istio/sa/bookinfo-productpage
+                    validationContextSdsSecretConfig:
+                      name: ROOTCA
+                      sdsConfig:
+                        apiConfigSource:
+                          apiType: GRPC
+                          grpcServices:
+                          - envoyGrpc:
+                              clusterName: sds-grpc
+                          setNodeOnFirstMessageOnly: true
+                          transportApiVersion: V3
+                        initialFetchTimeout: 0s
+                        resourceApiVersion: V3
+                  tlsCertificateSdsSecretConfigs:
+                  - name: default
+                    sdsConfig:
+                      apiConfigSource:
+                        apiType: GRPC
+                        grpcServices:
+                        - envoyGrpc:
+                            clusterName: sds-grpc
+                        setNodeOnFirstMessageOnly: true
+                        transportApiVersion: V3
+                      initialFetchTimeout: 0s
+                      resourceApiVersion: V3
+                sni: outbound_.443_._.kubernetes.default.svc.cluster.local
+          - match: {}
+            name: tlsMode-disabled
+            transportSocket:
+              name: envoy.transport_sockets.raw_buffer
+          type: EDS
+          upstreamConnectionOptions:
+            tcpKeepalive:
+              keepaliveInterval: 75
+              keepaliveProbes: 10
+              keepaliveTime: 7200

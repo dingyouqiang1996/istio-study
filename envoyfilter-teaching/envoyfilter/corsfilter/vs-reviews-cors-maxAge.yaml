@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: bookreviews
+spec:
+  exportTo:
+  - '*'
+  gateways:
+  - bookinfo-gateway
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /reviews
+    corsPolicy:
+      allowOrigins:
+      - exact: "http://mytest.com:8081"
+      allowMethods:
+      - GET
+      - OPTIONS
+      allowHeaders:
+      - content-type
+      maxAge: "10s"
+      #maxAge: "1m"
+      #maxAge: "1h"
+    route:
+    - destination:
+        host: reviews
+        port:
+          number: 9080

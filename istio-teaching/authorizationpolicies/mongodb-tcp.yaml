@@ -1,0 +1,16 @@
+apiVersion: "security.istio.io/v1beta1"
+kind: AuthorizationPolicy
+metadata:
+  name: mongodb-policy
+spec:
+ selector:
+   matchLabels:
+     app: mongodb
+ action: ALLOW
+ rules:
+ - from:
+   - source:
+       principals: ["cluster.local/ns/istio/sa/bookinfo-ratings-v2"]
+   to:
+   - operation:
+       ports: ["27017"]

@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ef-bootstrap
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+          stats_sinks:
+          - name: histrix
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.metrics.v3.HystrixSink
+              num_buckets: 10

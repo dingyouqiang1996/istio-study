@@ -1,0 +1,57 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: bookinfo
+spec:
+  revertOnDeletion: true
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: reviews-v1
+  autoscalerRef:
+    apiVersion: autoscaling/v1
+    kind: HorizontalPodAutoscaler
+    name: review-hpa
+  service:
+    port: 9080
+    gateways:
+    - istio/bookinfo-gateway
+    hosts:
+    - "*"
+  analysis:
+    interval: 1m
+    threshold: 10
+    maxWeight: 50
+    stepWeight: 20
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 1m
+    webhooks:
+      - name: "start gate"
+        type: confirm-rollout
+        url: http://flagger-loadtester.istio-system/gate/approve
+      - name: "helm test"
+        type: pre-rollout
+        url: http://flagger-loadtester.istio-system/
+        timeout: 3m
+        metadata:
+          type: "helmv3"
+          cmd: "test reviews-v1 -n istio"
+      - name: "load test"
+        type: rollout
+        url: http://flagger-loadtester.istio-system/
+        timeout: 15s
+        metadata:
+          cmd: "hey -z 1m -q 5 -c 2 http://reviews.istio:9080/reviews/0/"
+      - name: "notify"
+        type: post-rollout
+        url: https://hooks.slack.com/services/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
+        timeout: 5s
+        metadata:
+          some: "message"

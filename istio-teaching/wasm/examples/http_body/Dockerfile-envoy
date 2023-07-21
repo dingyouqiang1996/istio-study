@@ -1,0 +1,6 @@
+FROM envoyproxy/envoy:v1.18.6
+
+COPY ./envoy.yaml /etc/envoy.yaml
+COPY main.wasm ./examples/http_body/main.wasm
+RUN chmod go+r /etc/envoy.yaml
+CMD ["/usr/local/bin/envoy", "-c", "/etc/envoy.yaml", "--service-cluster", "dispatch"]

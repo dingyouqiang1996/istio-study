@@ -1,0 +1,13 @@
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: ingressgateway
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  url: oci://registry.cn-qingdao.aliyuncs.com/hxpdocker/http_body:v1
+  phase: STATS	
+  pluginConfig:
+    echo: true

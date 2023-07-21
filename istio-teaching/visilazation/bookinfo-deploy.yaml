@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: productpage
+  labels:
+    app: productpage
+    service: productpage
+spec:
+  ports:
+  - port: 9080
+    name: http
+    protocol: TCP
+    targetPort: 9080
+  - targetPort: 24231
+    name: http-fluentd
+    protocol: TCP
+    port: 24231
+  selector:
+    app: productpage
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookinfo-productpage
+  labels:
+    account: productpage
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productpage-v1
+  labels:
+    app: productpage
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: productpage
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: productpage
+        version: v1
+    spec:
+      serviceAccountName: bookinfo-productpage
+      containers:
+      - name: productpage
+        image: registry.cn-hangzhou.aliyuncs.com/hxpdocker/examples-bookinfo-productpage:1.16.2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - mountPath: /var/log
+          name: varlog
+        securityContext:
+          runAsUser: 0
+      - env:
+        - name: FLUENT_ELASTICSEARCH_HOST
+          value: elasticsearch-master.efk
+        - name: FLUENT_ELASTICSEARCH_PORT
+          value: "9200"
+        image: fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
+        imagePullPolicy: IfNotPresent
+        name: fluentd
+        ports:
+        - containerPort: 24231
+          name: metrics
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /var/log
+          name: varlog
+        - name: config-volume
+          mountPath: /fluentd/etc/
+      volumes:
+       - name: varlog
+         emptyDir: {}
+       - name: config-volume
+         configMap:
+           name: fluentd-config
+       - name: tmp
+         emptyDir: {}
+---

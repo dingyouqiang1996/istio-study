@@ -1,0 +1,10 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: sidecar
+  namespace: istio-system
+spec:
+  egress:
+  - hosts:
+    - "./*"
+    - "istio-system/*"

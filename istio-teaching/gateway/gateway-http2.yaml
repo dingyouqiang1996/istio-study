@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: bookinfo-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 15444
+      name: http2
+      protocol: HTTP2
+      targetPort: 15444
+    hosts:
+    - "*"

@@ -1,0 +1,7 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-nothing
+spec:
+  # This matches nothing, the action defaults to ALLOW if not specified.
+  {}

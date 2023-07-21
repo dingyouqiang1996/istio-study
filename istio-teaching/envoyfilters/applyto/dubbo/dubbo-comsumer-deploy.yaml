@@ -1,0 +1,24 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-sample-consumer
+  labels:
+    app: dubbo-sample-consumer
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-sample-consumer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dubbo-sample-consumer
+    spec:
+      containers:
+        - name: dubbo-sample-consumer
+          image: registry.cn-hangzhou.aliyuncs.com/hxpdocker/dubbo-sample-consumer
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: mode
+              value: demo

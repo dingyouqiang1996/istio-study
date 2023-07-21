@@ -1,0 +1,42 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ef-bootstrap
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+          stats_config:
+            stats_tags:
+            - tag_name: envoy.cluster_name2
+              regex: "^cluster\\.((.+?)\\.)"
+            - "tag_name": "envoy.http_user_agent2"
+              "regex": "^http(?=\\.).*?\\.user_agent\\.((.+?)\\.)\\w+?$"
+            - "tag_name": "envoy.http_conn_manager_prefix2"
+              "regex": "^http\\.((.*?)\\.)"
+            - tag_name: app
+              fixed_value: productpage
+            use_all_default_tags: true
+            stats_matcher:
+              exclusion_list:
+                patterns:
+                - prefix: test
+                - suffix: test
+                - contains: animal
+            histogram_bucket_settings:
+            - match:
+                prefix: productpage
+              buckets:
+              - 0.5
+              - 1
+              - 5
+              - 10
+              - 25
+              - 50
+              - 100
+

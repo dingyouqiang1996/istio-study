@@ -1,0 +1,56 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: jwt
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  priority: 20
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.jwt_authn
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+            providers:
+              origins-0:
+                forward: true
+                issuer: testing@secure.istio.io
+                localJwks:
+                  inlineString: "{ \"keys\":\n   [ \n     {\n       \"e\":\"AQAB\",\n
+                    \      \"kid\":\"DHFbpoIUqrY8t2zpA2qXfCmr5VO5ZEr4RzHU_-envvQ\",\n
+                    \      \"kty\":\"RSA\",\n       \"n\":\"xAE7eB6qugXyCAG3yhh7pkDkT65pHymX-P7KfIupjf59vsdo91bSP9C8H07pSAGQO1MV_xFj9VswgsCg4R6otmg5PV2He95lZdHtOcU5DXIg_pbhLdKXbi66GlVeK6ABZOUW3WYtnNHD-91gVuoeJT_DwtGGcp4ignkgXfkiEm4sw-4sfb4qdt5oLbyVpmW6x9cfa7vs2WTfURiCrBoUqgBo_-4WTiULmmHSGZHOjzwa8WtrtOQGsAFjIbno85jp6MnGGGZPYZbDAa_b3y5u-YpW7ypZrvD8BgtKVjgtQgZhLAGezMt0ua3DRrWnKqTZ0BJ_EyxOGuHJrLsn00fnMQ\"\n
+                    \    }\n   ]\n}\n"
+                payloadInMetadata: testing@secure.istio.io
+              origins-1:
+                jwt_cache_config:
+                  jwt_cache_size: 100
+                forward: true
+                issuer: testing@secure.istio.io
+                remote_jwks:
+                  http_uri: 
+                    uri: jwt-server.istio.svc.cluster.local:8080
+                    cluster: outbound|8080||jwt-server.istio.svc.cluster.local
+                    timeout: 1s
+                  retry_policy:
+                    retry_back_off:
+                      base_interval: 0.01s
+                      max_interval: 20s
+                    num_retries: 10
+                  cache_duration: 60s
+            filter_state_rules:
+              name: jwt_selector
+              requires:
+                issuer_1:
+                  provider_name: origins-1

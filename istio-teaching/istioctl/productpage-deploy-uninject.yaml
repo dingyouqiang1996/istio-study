@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: productpage
+  labels:
+    app: productpage
+    service: productpage
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: productpage
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bookinfo-productpage
+  labels:
+    account: productpage
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: productpage
+    version: v1
+  name: productpage-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: productpage
+      version: v1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: productpage
+        kubectl.kubernetes.io/default-logs-container: productpage
+        prometheus.io/path: /stats/prometheus
+        prometheus.io/port: "15020"
+        prometheus.io/scrape: "true"
+        sidecar.istio.io/inject: "false"
+      creationTimestamp: null
+      labels:
+        app: productpage
+        security.istio.io/tlsMode: istio
+        service.istio.io/canonical-name: productpage
+        service.istio.io/canonical-revision: v1
+        version: v1
+    spec:
+      containers:
+      - image: docker.io/istio/examples-bookinfo-productpage-v1:1.16.2
+        imagePullPolicy: IfNotPresent
+        name: productpage
+        ports:
+        - containerPort: 9080
+        resources: {}
+        securityContext:
+          runAsUser: 1000
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
+      serviceAccountName: bookinfo-productpage
+      volumes:
+      - name: workload-socket
+      - name: workload-certs
+      - emptyDir: {}
+        name: tmp
+status: {}
+---

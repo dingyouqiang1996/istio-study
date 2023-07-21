@@ -1,0 +1,86 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: oauth2
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_FIRST
+      value: 
+          name: envoy.filters.http.oauth2
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.oauth2.v3.OAuth2
+            config:
+              token_endpoint:
+                cluster: oauth
+                uri: oauth.com/token
+                timeout: 3s
+              authorization_endpoint: https://oauth.com/oauth/authorize/
+              redirect_uri: "%REQ(:x-forwarded-proto)%://%REQ(:authority)%/callback"
+              redirect_path_matcher:
+                path:
+                  exact: /callback
+              signout_path:
+                path:
+                  exact: /signout
+              credentials:
+                client_id: foo
+                token_secret:
+                  name: token
+                  sds_config:
+                    api_config_source: 
+                      api_type: "GRPC"
+                      grpc_services:
+                      - envoy_grpc: 
+                          cluster_name: "sds-grpc"
+                      set_node_on_first_message_only: true
+                      transport_api_version: "V3"
+                    initial_fetch_timeout: "0s"
+                    resource_api_version: "V3"
+                hmac_secret:
+                  name: hmac
+                  sds_config:
+                    api_config_source: 
+                      api_type: "GRPC"
+                      grpc_services:
+                      - envoy_grpc: 
+                          cluster_name: "sds-grpc"
+                      set_node_on_first_message_only: true
+                      transport_api_version: "V3"
+                    initial_fetch_timeout: "0s"
+                    resource_api_version: "V3"
+              # (Optional): defaults to 'user' scope if not provided
+              auth_scopes:
+              - user
+              - openid
+              - email
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value:
+          name: oauth
+          type: STRICT_DNS
+          connect_timeout: 10s
+          lb_policy: ROUND_ROBIN
+          load_assignment:
+            cluster_name: oauth
+            endpoints:
+            - lb_endpoints:
+              - endpoint:
+                  address:
+                     socket_address:
+                      address: productpage.istio.svc.cluster.local
+                      port_value: 9080

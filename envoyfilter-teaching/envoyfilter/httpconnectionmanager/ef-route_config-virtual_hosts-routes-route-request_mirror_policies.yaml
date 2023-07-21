@@ -1,0 +1,47 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: httpconnectionmanager
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                route_config:
+                  name: test
+                  virtual_hosts:
+                  - name: test
+                    domains:
+                    - "*"
+                    routes:
+                    - name: testroute
+                      match: 
+                        prefix: /product
+                      route:
+                        request_mirror_policies:
+                        - cluster: outbound|9080||productpage-2.istio.svc.cluster.local
+                          runtime_fraction:
+                            default_value:
+                              numerator: 100
+                              denominator: HUNDRED
+                          trace_sampled: true
+                        weighted_clusters:
+                          clusters:
+                          - name: outbound|9080||productpage.istio.svc.cluster.local
+                            weight: 100
+                          total_weight: 100
+                          runtime_key_prefix: test

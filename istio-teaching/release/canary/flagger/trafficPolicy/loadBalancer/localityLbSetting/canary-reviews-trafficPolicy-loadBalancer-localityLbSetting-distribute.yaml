@@ -1,0 +1,47 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: bookinfo
+spec:
+  revertOnDeletion: true
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: reviews-v1
+  provider: istio
+  service:
+    port: 9080
+    name: reviews
+    trafficPolicy:
+      loadBalancer:
+        simple: LEAST_CONN
+        localityLbSetting:
+          enabled: true
+          distribute:
+          - from: "us-central2/z2/*"
+            to:
+              "us-central3/z3/*": 100
+              #"us-central2/z2/*": 100
+              #"us-central1/z1/*": 100
+      outlierDetection:
+        consecutive5xxErrors: 1
+        interval: 5m
+        baseEjectionTime: 15m
+    gateways:
+    - istio/bookinfo-gateway
+    hosts:
+    - "*"
+  analysis:
+    interval: 1m
+    threshold: 10
+    maxWeight: 50
+    stepWeight: 20
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 1m

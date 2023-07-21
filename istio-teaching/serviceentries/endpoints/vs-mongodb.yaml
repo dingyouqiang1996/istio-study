@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: mongo
+spec:
+  hosts:
+  - "mymongodb.demo"
+  - "mongodb.com"
+  gateways:
+  - mongo
+  - mesh
+  tcp:
+  - match:
+    - port: 27017
+    route:
+    - destination:
+        host: mymongodb.demo
+        port:
+          number: 27017

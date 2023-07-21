@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      cluster:
+        name: outbound|9080||productpage.istio.svc.cluster.local
+    patch:
+      operation: MERGE
+      value: 
+          circuitBreakers:
+            thresholds:
+            - max_connections: 100
+              priority: HIGH
+          connect_timeout: "0.030s"
+          upstreamConnectionOptions:
+            tcp_keepalive:
+              keepalive_probes: 10
+              keepalive_time: 7200
+              keepalive_interval: 75

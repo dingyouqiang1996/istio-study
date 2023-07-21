@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    patch:
+      operation: MERGE
+      value: 
+        name: "outbound|9080||productpage.slime.svc.cluster.local"
+        type: EDS
+        lb_policy: LEAST_REQUEST
+        eds_cluster_config:
+          service_name: outbound|9080||productpage.slime.svc.cluster.local
+        metadata:
+          filter_metadata:
+            istio:
+              default_original_port: 9080
+              services:
+                name: productpage
+                host: productpage.slime.svc.cluster.local
+                namespace: slime

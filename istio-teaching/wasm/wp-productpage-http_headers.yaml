@@ -1,0 +1,11 @@
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: productpage
+  namespace: istio
+spec:
+  selector:
+    matchLabels:
+      app: productpage
+  url: oci://registry.cn-qingdao.aliyuncs.com/hxpdocker/http_headers:v1
+  phase: STATS	

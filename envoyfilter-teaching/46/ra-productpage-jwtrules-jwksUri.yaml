@@ -1,0 +1,12 @@
+apiVersion: "security.istio.io/v1beta1"
+kind: "RequestAuthentication"
+metadata:
+  name: "productpage"
+spec:
+  selector:
+    matchLabels:
+      app: productpage
+  jwtRules:
+  - issuer: "testing@secure.istio.io"
+    jwksUri: http://jwt-server.istio.svc.cluster.local:8000
+    outputPayloadToHeader: auth

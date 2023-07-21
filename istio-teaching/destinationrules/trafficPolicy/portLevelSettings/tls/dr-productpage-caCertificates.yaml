@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: productpage
+spec:
+  host: productpage
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  trafficPolicy:
+    portLevelSettings:
+    - port:
+        number: 9080
+      loadBalancer:
+        simple: RANDOM
+      tls:
+        mode: MUTUAL
+        caCertificates: /etc/my-cert/ca.crt
+        clientCertificate: /etc/my-cert/tls.crt
+        privateKey: /etc/my-cert/tls.key
+        sni: productpage.istio.svc.cluster.local

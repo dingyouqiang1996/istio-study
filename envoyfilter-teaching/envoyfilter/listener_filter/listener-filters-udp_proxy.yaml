@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: listener
+  namespace: istio-system 
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: LISTENER
+    match:
+      context: GATEWAY
+    patch:
+      operation: ADD
+      value:
+        name: proxy-udp
+        address:
+          socket_address:
+            protocol: UDP
+            address: 0.0.0.0
+            port_value: 31400
+        udp_listener_config:
+          downstream_socket_config:
+            max_rx_datagram_size: 9000
+        listener_filters:
+        - name: envoy.filters.udp_listener.udp_proxy
+          typed_config:
+            '@type': type.googleapis.com/envoy.extensions.filters.udp.udp_proxy.v3.UdpProxyConfig
+            stat_prefix: service
+            cluster: service_udp
+            upstream_socket_config:
+              max_rx_datagram_size: 9000

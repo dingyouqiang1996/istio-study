@@ -1,0 +1,50 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        portNumber: 9080
+        filterChain:
+          destinationPort: 9080
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:         
+          name: envoy.filters.http.rbac
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC
+            rules:
+              policies:
+                ns[istio]-policy[productpage]-rule[0]:
+                  permissions:
+                  - andRules:
+                      rules:
+                      - any: true
+                  principals:
+                  - andIds:
+                      ids:
+                      - notId:
+                          orIds:
+                            ids:
+                            - metadata:
+                                filter: istio_authn
+                                path:
+                                - key: request.auth.claims
+                                - key: groups
+                                value:
+                                  listMatch:
+                                    oneOf:
+                                      stringMatch:
+                                        exact: group1
+            shadowRulesStatPrefix: istio_dry_run_allow_

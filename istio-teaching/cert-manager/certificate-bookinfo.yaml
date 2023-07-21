@@ -1,0 +1,16 @@
+apiVersion:  cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: bookinfo-certificate
+spec:
+  secretName: bookinfo-certs
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+  commonName: bookinfo.com
+  subject:
+    organizations:
+    - example Inc.
+  dnsNames:
+  - bookinfo.com
+  - bookinfo.demo

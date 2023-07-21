@@ -1,0 +1,54 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: bookinfo
+spec:
+  revertOnDeletion: true
+  provider: istio
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: reviews-v1
+  # the maximum time in seconds for the canary deployment
+  # to make progress before rollback (default 600s)
+  progressDeadlineSeconds: 60
+  service:
+    port: 9080
+    name: reviews
+    portDiscovery: true
+    gateways:
+    - istio/bookinfo-gateway
+    hosts:
+    - "*"
+  analysis:
+    # schedule interval (default 60s)
+    interval: 30s
+    threshold: 2
+    iterations: 10
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        # maximum req duration P99
+        # milliseconds
+        thresholdRange:
+          max: 500
+        interval: 30s
+    # acceptance/load testing hooks
+    webhooks:
+      - name: smoke-test
+        type: pre-rollout
+        url: http://flagger-loadtester.istio-system/
+        timeout: 15s
+        metadata:
+          type: bash
+          cmd: "curl -sd 'anon' http://reviews-canary.istio:9080/reviews/0 "
+      - name: load-test
+        url: http://flagger-loadtester.istio-system/
+        type: rollout
+        timeout: 5s
+        metadata:
+          type: cmd
+          cmd: "hey -z 10m -q 10 -c 2 http://reviews-canary.istio:9080/reviews/0"

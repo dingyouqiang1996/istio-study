@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: productpage
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  ingress:
+  - captureMode: NONE
+    defaultEndpoint: 127.0.0.1:9080
+    port:
+      number: 9080
+      protocol: HTTP
+      name: http

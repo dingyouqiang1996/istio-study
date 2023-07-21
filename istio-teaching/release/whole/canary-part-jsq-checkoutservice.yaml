@@ -1,0 +1,37 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: checkoutservice
+spec:
+  revertOnDeletion: true
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: checkoutservice-v1
+  service:
+    port: 5050
+    targetPort: 5050
+    portName: grpc
+    name: checkoutservice
+    hosts:
+    - "checkoutservice"
+    trafficPolicy:
+      loadBalancer:
+        consistentHash:
+          httpCookie:
+            name: shop_session-id
+            ttl: 0s
+  analysis:
+    interval: 1m
+    threshold: 3
+    maxWeight: 50
+    stepWeight: 20
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 1m

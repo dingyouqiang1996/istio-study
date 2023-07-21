@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dr-mongodb
+spec:
+  host: mymongodb.demo
+  trafficPolicy:
+    loadBalancer:
+      localityLbSetting:
+        enabled: true
+        distribute:
+        - from: "us-central2/z2/*"
+          to:
+            #"us-central3/z3/*": 100
+            #"us-central2/z2/*": 100
+            "us-central1/z1/*": 100
+    outlierDetection:
+      consecutive5xxErrors: 1
+      interval: 5m
+      baseEjectionTime: 15m

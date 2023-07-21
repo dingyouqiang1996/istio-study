@@ -1,0 +1,38 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: frontend
+spec:
+  revertOnDeletion: true
+  provider: istio
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-v1
+  progressDeadlineSeconds: 60
+  service:
+    port: 80
+    targetPort: 8080
+    gateways:
+    - demo-01/frontend-gateway
+    hosts:
+    - "myshop-1.demo"
+    trafficPolicy:
+      loadBalancer:
+        consistentHash:
+          httpCookie:
+            name: shop_session-id
+            ttl: 0s
+  analysis:
+    interval: 30s
+    threshold: 10
+    iterations: 5
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 30s

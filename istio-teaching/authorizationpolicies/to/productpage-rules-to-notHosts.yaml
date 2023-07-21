@@ -1,0 +1,19 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+ name: productpage
+spec:
+ selector:
+   matchLabels:
+     app: productpage
+     version: v1
+ action: ALLOW
+ rules:
+ - to:
+   - operation:
+       notHosts:
+       - "test"
+   from:
+   - source:
+       namespaces:
+       - "istio-system"

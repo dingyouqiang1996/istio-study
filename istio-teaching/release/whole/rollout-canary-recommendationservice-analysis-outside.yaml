@@ -1,0 +1,81 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: recommendationservice-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recommendationservice
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: recommendationservice
+        version: v1
+        line: v1 
+      annotations:
+        sidecar.istio.io/userVolumeMount: '[{"name":"wasm", "mountPath":"/var/local/lib/wasm-filters", "readonly":true},{"name":"wasm-2", "mountPath":"/var/local/lib/wasm-filters-2", "readonly":true},{"name":"wasm-3", "mountPath":"/var/local/lib/wasm-filters-3", "readonly":true}]'
+        sidecar.istio.io/userVolume: '[{"name":"wasm", "configmap":{"name":"wasm"}},{"name":"wasm-2", "configmap":{"name":"wasm-2"}},{"name":"wasm-3", "configmap":{"name":"wasm-3"}}]'
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: server
+        image: alexshu/recommendationservice:v0.2.1
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          periodSeconds: 5
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:8080"]
+        livenessProbe:
+          periodSeconds: 5
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:8080"]
+        env:
+        - name: PORT
+          value: "8080"
+        - name: PRODUCT_CATALOG_SERVICE_ADDR
+          value: "productcatalogservice:3550"
+        # - name: DISABLE_TRACING
+        #   value: "1"
+        # - name: DISABLE_PROFILER
+        #   value: "1"
+        # - name: DISABLE_DEBUGGER
+        #   value: "1"
+  strategy:
+    canary:
+      canaryMetadata:
+        labels:
+          canary: canary
+      stableMetadata:
+        labels:
+          stable: stable 
+      trafficRouting:
+        istio:
+          virtualService:
+            name: recommendationservice-vs
+            routes:
+            - http-primary
+          destinationRule:
+            name: recommendationservice
+            canarySubsetName: v2
+            stableSubsetName: v1
+      analysis:
+        startingStep: 1
+        templates:
+        - templateName: success-rate
+          clusterScope: false
+        args:
+        - name: service-name
+          value: recommendationservice.demo-01.svc.cluster.local
+      steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
+      

@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ef-productpage-bootstrap-metadata
+spec:
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+        node:
+          metadata:
+            ISTIO_VERSION: 1.13.3  

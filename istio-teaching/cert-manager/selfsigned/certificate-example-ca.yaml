@@ -1,0 +1,24 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ca-example-com 
+  namespace: cert-manager
+spec:
+  secretName: ca-example-com-tls
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  subject:
+    organizations:
+    - Example Inc. 
+  commonName: ca.example.com 
+  isCA: true 
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  dnsNames:
+  - ca.example.com 
+  issuerRef:
+    name: selfsigned-issuer 
+    kind: Issuer
+    group: cert-manager.io

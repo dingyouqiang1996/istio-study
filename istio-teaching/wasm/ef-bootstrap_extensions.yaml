@@ -1,0 +1,64 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: bootstrap-extensions
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+        bootstrap_extensions:
+        - name: envoy.bootstrap.wasm
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.wasm.v3.WasmService
+            singleton: true
+            config:
+              # Used as a queue name
+              configuration:
+                "@type": type.googleapis.com/google.protobuf.StringValue
+                value: "http_request_headers"
+              # Use the same vm_config as below, so we can reuse the same VM for multiple queues.
+              vm_config:
+                vm_id: "receiver"
+                runtime: "envoy.wasm.runtime.v8"
+                code:
+                  local:
+                    filename: "/var/local/lib/wasm-filters/reciever/main.wasm"
+
+        - name: envoy.bootstrap.wasm
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.wasm.v3.WasmService
+            singleton: true
+            config:
+              # Used as a queue name
+              configuration:
+                "@type": type.googleapis.com/google.protobuf.StringValue
+                value: "http_response_headers"
+              # Use the same vm_config as above, so we can reuse the same VM for multiple queues.
+              vm_config:
+                vm_id: "receiver"
+                runtime: "envoy.wasm.runtime.v8"
+                code:
+                  local:
+                    filename: "/var/local/lib/wasm-filters/reciever/main.wasm"
+
+        - name: envoy.bootstrap.wasm
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.wasm.v3.WasmService
+            singleton: true
+            config:
+              configuration:
+                # Used as a queue name
+                "@type": type.googleapis.com/google.protobuf.StringValue
+                value: "tcp_data_hashes"
+              # Use the same vm_config as above, so we can reuse the same VM for multiple queues.
+              vm_config:
+                vm_id: "receiver"
+                runtime: "envoy.wasm.runtime.v8"
+                code:
+                  local:
+                    filename: "/var/local/lib/wasm-filters/reciever/main.wasm"

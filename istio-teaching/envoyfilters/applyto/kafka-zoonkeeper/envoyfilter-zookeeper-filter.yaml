@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: zookeeper-envoy-filter
+spec:
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        name: 10.68.84.199_2181    # sed -i .bak "s/\${my-release-zookeeper}/`kubectl get svc my-release-zookeeper -n kafka -o=jsonpath='{.spec.clusterIP}'`/" istio/envoyfilter-zookeeper-filter.yaml
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.network.zookeeper_proxy
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.zookeeper_proxy.v3.ZooKeeperProxy
+          stat_prefix: "outbound|2181||my-release-zookeeper.istio.svc.cluster.local"

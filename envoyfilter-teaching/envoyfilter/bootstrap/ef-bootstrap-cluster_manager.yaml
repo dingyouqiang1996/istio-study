@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ef-bootstrap
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+        cluster_manager:
+          #local_cluster_name: productpage
+          outlier_detection:
+            event_log_path: /dev/null
+          load_stats_config:
+            api_type: "GRPC"
+            transport_api_version: "V3"
+            grpc_services:
+            - envoy_grpc:
+                cluster_name: xds-grpc
+              timeout: 60s
+            set_node_on_first_message_only: true
+            rate_limit_settings:
+              max_tokens: 100 
+              fill_rate: 10
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+        static_resources:
+          clusters:
+          - name: "productpage"    
+            type: "STATIC"
+            connect_timeout: "0.250s"
+            load_assignment:
+              cluster_name: "productpage"
+              endpoints:
+              - lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: "127.0.0.1"
+                        port_value: 9080

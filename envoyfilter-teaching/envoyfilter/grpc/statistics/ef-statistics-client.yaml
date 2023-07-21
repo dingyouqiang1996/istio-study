@@ -1,0 +1,44 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: grpc-client
+spec:
+  workloadSelector:
+    labels:
+      app: grpc-client
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+        context: SIDECAR_OUTBOUND
+        listener:
+          name: 0.0.0.0_8081
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.router
+    patch:
+        operation: INSERT_BEFORE
+        value:           
+          name: envoy.filters.http.grpc_http1_bridge
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_http1_bridge.v3.Config
+  - applyTo: HTTP_FILTER
+    match:
+        context: SIDECAR_OUTBOUND
+        listener:
+          name: 0.0.0.0_8081
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.router
+    patch:
+        operation: INSERT_BEFORE
+        value:           
+          name: envoy.filters.http.grpc_stats
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_stats.v3.FilterConfig
+            emit_filter_state: true
+            stats_for_all_methods: true
+            enable_upstream_stats: true

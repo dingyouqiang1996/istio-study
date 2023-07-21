@@ -1,0 +1,9 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: demo
+  meshConfig:
+    tcpKeepalive: 
+      probes: 11
+      time: 1h
+      interval: 11s

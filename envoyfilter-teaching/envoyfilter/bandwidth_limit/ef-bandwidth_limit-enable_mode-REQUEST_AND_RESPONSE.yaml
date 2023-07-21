@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: bandth 
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value: 
+        name: envoy.filters.http.bandwidth_limit
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.bandwidth_limit.v3.BandwidthLimit
+          stat_prefix:  bandthlimit
+          enable_mode: REQUEST_AND_RESPONSE
+          limit_kbps: 1
+          fill_interval: 1s
+          runtime_enabled:
+            default_value: true
+            runtime_key: bandwidth.enable

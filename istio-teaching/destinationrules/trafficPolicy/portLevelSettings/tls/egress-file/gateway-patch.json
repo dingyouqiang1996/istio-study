@@ -1,0 +1,40 @@
+[{
+  "op": "add",
+  "path": "/spec/template/spec/containers/0/volumeMounts/0",
+  "value": {
+    "mountPath": "/etc/istio/nginx-client-certs",
+    "name": "nginx-client-certs",
+    "readOnly": true
+  }
+},
+{
+  "op": "add",
+  "path": "/spec/template/spec/volumes/0",
+  "value": {
+  "name": "nginx-client-certs",
+    "secret": {
+      "secretName": "nginx-client-certs",
+      "optional": true
+    }
+  }
+},
+{
+  "op": "add",
+  "path": "/spec/template/spec/containers/0/volumeMounts/1",
+  "value": {
+    "mountPath": "/etc/istio/nginx-ca-certs",
+    "name": "nginx-ca-certs",
+    "readOnly": true
+  }
+},
+{
+  "op": "add",
+  "path": "/spec/template/spec/volumes/1",
+  "value": {
+  "name": "nginx-ca-certs",
+    "secret": {
+      "secretName": "nginx-ca-certs",
+      "optional": true
+    }
+  }
+}]

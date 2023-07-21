@@ -1,0 +1,14 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+ name: details
+spec:
+ selector:
+   matchLabels:
+     app: details
+ action: ALLOW
+ rules:
+ - to:
+   - operation:
+       hosts:
+       - "details:9080"

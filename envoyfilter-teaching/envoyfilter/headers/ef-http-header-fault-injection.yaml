@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: http-header
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      listener:
+        #name: 0.0.0.0_8080  
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.fault
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.fault.v3.HTTPFault
+          max_active_faults: 100
+          abort:
+            header_abort: {}
+            percentage:
+              numerator: 100
+          delay:
+            header_delay: {}
+            percentage:
+              numerator: 100
+          response_rate_limit:
+            header_limit: {}
+            percentage:
+              numerator: 100
+

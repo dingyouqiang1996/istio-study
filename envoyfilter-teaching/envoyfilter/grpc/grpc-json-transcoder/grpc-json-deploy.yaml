@@ -1,0 +1,63 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wind-server
+  labels:
+    app: wind-server
+spec:
+  selector:
+    matchLabels:
+      app: wind-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wind-server
+        version: v1
+    spec:
+      containers:
+        - name: csrf
+          image: registry.cn-beijing.aliyuncs.com/hxpdocker/wind-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50052
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wind-server
+spec:
+  selector:
+    app: wind-server
+  ports:
+    - name: grpc-wind-server
+      protocol: TCP
+      port: 50052
+      targetPort: 50052
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wind-client
+  labels:
+    app: wind-client
+spec:
+  selector:
+    matchLabels:
+      app: wind-client
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wind-client
+        version: v1
+      annotations:
+        sidecar.istio.io/userVolume: '[{"name":"proto-file","hostPath":{"path":"/var/lib/"}}]' 
+        sidecar.istio.io/userVolumeMount: '[{"mountPath":"/etc/envoy/","name":"proto-file"}]'
+    spec:
+      containers:
+        - name: csrf
+          image: registry.cn-beijing.aliyuncs.com/hxpdocker/wind-client:latest
+          imagePullPolicy: Always
+

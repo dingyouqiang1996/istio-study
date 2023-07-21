@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: reviews
+spec:
+  host: reviews.istio.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      localityLbSetting:
+        enabled: true
+        failover:
+        - from: us-central1
+          to: us-central2
+        - from: us-central2
+          to: us-central1
+        - from: us-central3
+          to: us-central1
+    outlierDetection:
+      consecutive5xxErrors: 1
+      interval: 5m
+      baseEjectionTime: 15m

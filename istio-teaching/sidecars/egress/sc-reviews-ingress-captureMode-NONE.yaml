@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: reviews
+spec:
+  workloadSelector:
+    labels:
+      app: reviews
+  ingress:
+  - bind: 0.0.0.0
+    port:
+      number: 9080
+      protocol: HTTP
+      name: http
+    defaultEndpoint: 127.0.0.1:9080
+    captureMode: NONE

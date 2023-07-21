@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+data:
+  config.yaml: |
+    domain: productpage-ratelimit
+    descriptors:
+      - key: source_cluster
+        value: "outbound|80||istio-ingressgateway.istio-system.svc.cluster.local"
+        rate_limit:
+          unit: minute
+          requests_per_unit: 1
+      - key: source_cluster
+        rate_limit:
+          unit: minute
+          requests_per_unit: 10

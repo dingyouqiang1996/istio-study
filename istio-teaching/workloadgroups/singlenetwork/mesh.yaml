@@ -1,0 +1,19 @@
+defaultConfig:
+  discoveryAddress: istiod.istio-system.svc:15012
+  meshId: mesh1
+  proxyMetadata:
+    CANONICAL_REVISION: latest
+    CANONICAL_SERVICE: httpd
+    ISTIO_META_AUTO_REGISTER_GROUP: httpd
+    ISTIO_META_CLUSTER_ID: cluster1
+    ISTIO_META_DNS_CAPTURE: "true"
+    ISTIO_META_MESH_ID: mesh1
+    ISTIO_META_NETWORK: ""
+    ISTIO_META_WORKLOAD_NAME: httpd
+    ISTIO_METAJSON_LABELS: '{"app":"httpd","service.istio.io/canonical-name":"httpd","service.istio.io/canonical-version":"latest","type":"vm"}'
+    POD_NAMESPACE: vm-httpd
+    SERVICE_ACCOUNT: sa-httpd
+    TRUST_DOMAIN: cluster.local
+  tracing:
+    zipkin:
+      address: zipkin.istio-system:9411

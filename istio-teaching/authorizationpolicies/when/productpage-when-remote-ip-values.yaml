@@ -1,0 +1,14 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+ name: productpage
+spec:
+ selector:
+   matchLabels:
+     app: productpage
+ action: DENY
+ rules:
+ - when:
+   - key: remote.ip
+     values:
+     - "192.168.229.1/32"

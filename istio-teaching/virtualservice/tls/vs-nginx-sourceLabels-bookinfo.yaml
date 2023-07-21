@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: nginx
+spec:
+  hosts:
+  - nginx.example.com
+  gateways:
+  - bookinfo-gateway
+  tls:
+  - match:
+    - port: 443
+      sniHosts:
+      - nginx.example.com
+      sourceLabels:
+        istio: ingressgateway
+    route:
+    - destination:
+        host: productpage
+        port:
+          number: 9080
+        subset: v1

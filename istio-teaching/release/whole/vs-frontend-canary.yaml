@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: frontend-canary
+spec:
+  gateways:
+  - frontend-gateway
+  hosts:
+  - "myshop-2.demo"
+  http:
+  - route:
+    - destination:
+        host: frontend-v1-canary
+        port:
+          number: 80

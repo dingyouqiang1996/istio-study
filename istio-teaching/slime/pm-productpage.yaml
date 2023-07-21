@@ -1,0 +1,23 @@
+apiVersion: microservice.slime.io/v1alpha1
+kind: PluginManager
+metadata:
+  name: productpage
+spec:
+  workload_labels:
+    app: productpage
+  plugin:
+  - enable: true
+    name: productpage-ep    
+    inline:
+      settings:
+        rate_limits:
+        - actions:
+          - header_value_match:
+              descriptor_value: dv-productpage
+              headers:
+              - invert_match: false
+                name: test
+                safe_regex_match:
+                  google_re2: {}
+                  regex: test
+          stage: 0

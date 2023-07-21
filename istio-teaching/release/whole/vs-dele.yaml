@@ -1,0 +1,29 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: frontend-dele
+spec:
+  gateways:
+  - demo-01/frontend-gateway
+  hosts:
+  - 'myshop-1.demo'
+  http:
+  - match:
+    - uri:
+        prefix: /
+    delegate:
+      name: frontend-v1
+      namespace: demo-01
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: frontend-dele
+spec:
+  host: myshop-1.demo
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        httpCookie:
+          name: shop_session-id
+          ttl: 0s

@@ -1,0 +1,42 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: wasm
+  namespace: istio
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+      version: v1
+  priority: 20
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          destinationPort: 9080
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.wasm
+        typed_config:
+                '@type': type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+                config:
+                  root_id: attribute_id
+                  name: my_plugin
+                  configuration:
+                    "@type": type.googleapis.com/google.protobuf.StringValue
+                    value: |
+                      {}
+                  vm_config:
+                    vm_id: attribute_vm_id
+                    runtime: "envoy.wasm.runtime.v8"
+                    code:
+                      local:
+                        filename: /var/local/lib/wasm-filters/main.wasm
+

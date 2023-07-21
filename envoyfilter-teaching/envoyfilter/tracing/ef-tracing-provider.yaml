@@ -1,0 +1,36 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: tracing
+spec:
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                tracing:
+                  client_sampling:
+                    value: 40
+                  random_sampling:
+                    value: 50
+                  overall_sampling:
+                    value: 45 
+                  verbose: true
+                  max_path_tag_length: 256
+                  provider:
+                    name: envoy.tracers.zipkin
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.config.trace.v3.ZipkinConfig
+                      collector_cluster: outbound|9411||zipkin.istio-system.svc.cluster.local
+                      collector_endpoint: /api/v2/spans
+                      trace_id_128bit: true
+                      shared_span_context: false
+                      collector_endpoint_version: HTTP_JSON

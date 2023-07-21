@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: nginx
+spec:
+  hosts:
+  - nginx.example.com
+  gateways:
+  - bookinfo-gateway
+  tls:
+  - match:
+    - port: 443
+      sniHosts:
+      - nginx.example.com
+      gateways:
+      - bookinfo-gateway
+    route:
+    - destination:
+        host: my-nginx
+        port:
+          number: 443
+        subset: v1

@@ -1,0 +1,20 @@
+{
+  "virtual_domains": [
+    {
+      "name": "www.suffix1.com",
+      "endpoint": {
+        "address_list": {
+          "address": [ "10.0.0.1", "10.0.0.2" ]
+        }
+      }
+    },
+    {
+      "name": "www.suffix2.com",
+      "endpoint": {
+        "address_list": {
+          "address": [ "2001:8a:c1::2800:7" ]
+        }
+      }
+    }
+  ]
+}

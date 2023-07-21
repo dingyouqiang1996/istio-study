@@ -1,0 +1,63 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: filter-ratelimit
+spec:
+  workloadSelector:
+    labels:
+      app: ratings
+      version: v2-mysql-vm
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        context: SIDECAR_OUTBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.tcp_proxy"
+      patch:
+        operation: INSERT_BEFORE
+        # Adds the Envoy Rate Limit Filter in HTTP filter chain.
+        value:
+          name: envoy.filters.network.ratelimit
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.network.ratelimit.v3.RateLimit
+            # domain can be anything! Match it to the ratelimter service config
+            domain: productpage-ratelimit
+            stat_prefix: tcp-global-ratelimit
+            failure_mode_deny: true
+            descriptors:
+            - entries:
+              - key: authenticated
+                value: "false"
+              limit:
+                requests_per_unit: 1
+                unit: MINUTE
+            rate_limit_service:
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: rate_limit_cluster
+                timeout: 10s
+              transport_api_version: V3
+    - applyTo: CLUSTER
+      match:
+        cluster:
+          service: ratelimit.istio.svc.cluster.local
+      patch:
+        operation: ADD
+        # Adds the rate limit service cluster for rate limit service defined in step 1.
+        value:
+          name: rate_limit_cluster
+          type: STRICT_DNS
+          connect_timeout: 10s
+          lb_policy: ROUND_ROBIN
+          http2_protocol_options: {}
+          load_assignment:
+            cluster_name: rate_limit_cluster
+            endpoints:
+            - lb_endpoints:
+              - endpoint:
+                  address:
+                     socket_address:
+                      address: ratelimit.istio.svc.cluster.local
+                      port_value: 8081

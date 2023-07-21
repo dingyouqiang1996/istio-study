@@ -1,0 +1,75 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: tap
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                route_config:
+                  name: test
+                  virtual_hosts:
+                  - name: test
+                    domains:
+                    - "*"
+                    routes:
+                    - name: testroute
+                      match: 
+                        prefix: /
+                      route:
+                        cluster: productpage
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value:
+            name: productpage
+            connect_timeout: 30s
+            type: LOGICAL_DNS
+            dns_lookup_family: V4_ONLY
+            lb_policy: ROUND_ROBIN
+            load_assignment:
+              cluster_name: productpage
+              endpoints:
+              - lb_endpoints:
+                - endpoint:
+                    address:
+                      socket_address:
+                        address: productpage.istio
+                        port_value: 9080
+            transport_socket:
+              name: envoy.transport_sockets.tap
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.transport_sockets.tap.v3.Tap
+                common_config:
+                    static_config:
+                      match_config:
+                        http_request_headers_match:
+                          headers:
+                            - name: ":path"
+                              string_match:
+                                contains: "productpage"
+                      output_config:
+                        max_buffered_tx_bytes: 2048
+                        streaming: true
+                        sinks:
+                          - format: PROTO_TEXT
+                            file_per_tap:
+                              path_prefix: /var/lib/istio/data/
+                transport_socket:
+                  name: envoy.transport_sockets.raw_buffer
+                

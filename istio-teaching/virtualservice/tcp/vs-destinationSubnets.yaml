@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: tcp-echo
+spec:
+  hosts:
+  - tcp-echo
+  tcp:
+  - match:
+    - destinationSubnets:
+      - 10.68.0.0/16
+    route:
+    - destination:
+        host: tcp-echo
+        subset: v1

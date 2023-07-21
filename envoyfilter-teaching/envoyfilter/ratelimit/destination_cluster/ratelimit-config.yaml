@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+data:
+  config.yaml: |
+    domain: productpage-ratelimit
+    descriptors:
+      - key: destination_cluster
+        value: "inbound|9080||"
+        rate_limit:
+          unit: minute
+          requests_per_unit: 1
+      - key: destination_cluster
+        rate_limit:
+          unit: minute
+          requests_per_unit: 10

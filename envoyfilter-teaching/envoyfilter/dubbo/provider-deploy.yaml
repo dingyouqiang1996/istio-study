@@ -1,0 +1,86 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-hello-provider-v1
+  labels:
+    app: dubbo-hello-provider
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-hello-provider
+      version: v1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dubbo-hello-provider
+        version: v1
+    spec:
+      containers:
+        - name: dubbo-hello-provider
+          image: registry.cn-hangzhou.aliyuncs.com/hxpdocker/dubbo-hello-provider:1.0
+          imagePullPolicy: Always
+          env:
+          - name: dubbo.provider.port
+            value: 20880
+          resources:
+            requests:
+              cpu: 0.05
+              memory: 500Mi
+            limits:
+              cpu: 1
+              memory: 4Gi
+          env:
+          - name: version
+            value: v1
+          ports:
+            - containerPort: 20880
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-hello-provider-v2
+  labels:
+    app: dubbo-hello-provider
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-hello-provider
+      version: v2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dubbo-hello-provider
+        version: v2
+    spec:
+      containers:
+        - name: dubbo-hello-provider
+          image: registry.cn-hangzhou.aliyuncs.com/hxpdocker/dubbo-hello-provider:1.0
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 0.05
+              memory: 500Mi
+            limits:
+              cpu: 1
+              memory: 4Gi
+          env:
+          - name: version
+            value: v2
+          ports:
+            - containerPort: 20880
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dubbo-hello-provider
+spec:
+ selector:  
+   app: dubbo-hello-provider
+ type: ClusterIP
+ ports:
+ -  name: tcp-dubbo
+    port: 20880      
+    targetPort: 20880

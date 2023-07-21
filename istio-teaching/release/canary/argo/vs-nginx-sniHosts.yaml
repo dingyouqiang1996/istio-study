@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: nginx-vs
+spec:
+  hosts:
+  - nginx.example.com
+  tls:
+  - match:
+    - sniHosts:
+      - nginx.example.com
+      port: 443
+    route:
+    - destination:
+        host: my-nginx-canary
+        port:
+          number: 443
+      weight: 0
+    - destination:
+        host: my-nginx-stable
+        port:
+          number: 443
+      weight: 100

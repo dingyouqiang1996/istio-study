@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: nginx
+spec:
+  hosts:
+  - my-nginx
+  tls:
+  - match:
+    - sniHosts:
+      - my-nginx
+      destinationSubnets: 
+      - "10.0.0.0/8"
+    route:
+    - destination:
+        host: my-nginx
+        subset: v2

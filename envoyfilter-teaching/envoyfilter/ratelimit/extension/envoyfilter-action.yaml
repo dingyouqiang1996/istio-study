@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: filter-ratelimit-svc
+  namespace: istio
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+    - applyTo: VIRTUAL_HOST
+      match:
+        context: SIDECAR_INBOUND
+        routeConfiguration:
+          vhost:
+            name: "inbound|http|9080"
+            route:
+              action: ANY
+      patch:
+        operation: MERGE
+        # Applies the rate limit rules.
+        value:
+          rate_limits:
+            - actions: 
+              - extension:
+                  name: envoy.rate_limit_descriptors.expr
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.rate_limit_descriptors.expr.v3.Descriptor
+                    descriptor_key: test
+                    skip_if_error: true
+                    text: "connection.requested_server_name"

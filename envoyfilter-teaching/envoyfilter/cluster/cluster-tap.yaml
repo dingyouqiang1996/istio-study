@@ -1,0 +1,79 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: cluster
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: FILTER_CHAIN
+    match:
+      listener:
+        filterChain:
+          transportProtocol: tls
+          destinationPort: 9080
+    patch:
+      operation: MERGE
+      value:
+        transport_socket:
+          name: envoy.transport_sockets.tap
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.transport_sockets.tap.v3.Tap
+            common_config:
+              admin_config:
+                config_id: test_config_id
+              static_config:
+                match_config:
+                  any_match: true
+                output_config:
+                  sinks:
+                  - file_per_tap:
+                      path_prefix: /var/log/tap
+                    #format: JSON_BODY_AS_BYTES             
+            transport_socket:
+                name: envoy.transport_sockets.tls
+                typed_config:
+                  '@type': type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+                  common_tls_context:
+                    alpn_protocols:
+                    - h2
+                    - http/1.1
+                    combined_validation_context:
+                      default_validation_context:
+                        match_subject_alt_names:
+                        - prefix: spiffe://cluster.local/
+                      validation_context_sds_secret_config:
+                        name: ROOTCA
+                        sds_config:
+                          api_config_source:
+                            api_type: GRPC
+                            grpc_services:
+                            - envoy_grpc:
+                                cluster_name: sds-grpc
+                            set_node_on_first_message_only: true
+                            transport_api_version: V3
+                          initial_fetch_timeout: 0s
+                          resource_api_version: V3
+                    tls_certificate_sds_secret_configs:
+                    - name: default
+                      sds_config:
+                        api_config_source:
+                          api_type: GRPC
+                          grpc_services:
+                          - envoy_grpc:
+                              cluster_name: sds-grpc
+                          set_node_on_first_message_only: true
+                          transport_api_version: V3
+                        initial_fetch_timeout: 0s
+                        resource_api_version: V3
+                    tls_params:
+                      cipher_suites:
+                      - ECDHE-ECDSA-AES256-GCM-SHA384
+                      - ECDHE-RSA-AES256-GCM-SHA384
+                      - ECDHE-ECDSA-AES128-GCM-SHA256
+                      - ECDHE-RSA-AES128-GCM-SHA256
+                      - AES256-GCM-SHA384
+                      - AES128-GCM-SHA256
+                      tls_minimum_protocol_version: TLSv1_2
+                  require_client_certificate: true

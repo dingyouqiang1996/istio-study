@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  creationTimestamp: "2021-10-24T08:58:08Z"
+  generation: 3
+  name: broker-0-master
+  namespace: istio
+  ownerReferences:
+  - apiVersion: rocketmq.apache.org/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Broker
+    name: broker
+    uid: a9450e4e-d9bc-443e-ad7f-a3f330e10395
+  resourceVersion: "5339103"
+  uid: 05d03ef1-b25a-4255-8500-934536ee2440
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: broker
+      broker_cr: broker
+  serviceName: ""
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: broker
+        broker_cr: broker
+    spec:
+      containers:
+      - env:
+        - name: NAMESRV_ADDR
+          value: 172.20.2.155:9876
+        - name: BROKER_ID
+          value: "0"
+        - name: BROKER_CLUSTER_NAME
+          value: broker
+        - name: BROKER_NAME
+          value: broker-0
+        - name: BROKER_MEM
+          valueFrom:
+            configMapKeyRef:
+              key: BROKER_MEM
+              name: broker-config
+        image: apacherocketmq/rocketmq-broker:4.5.0-alpine-operator-0.3.0
+        imagePullPolicy: IfNotPresent
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - echo Initial broker
+        name: broker
+        ports:
+        - containerPort: 10909
+          name: vip
+          protocol: TCP
+        - containerPort: 10911
+          name: main
+          protocol: TCP
+        - containerPort: 10912
+          name: ha
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 12Gi
+          requests:
+            cpu: 250m
+            memory: 2Gi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /root/logs
+          name: broker-storage
+          subPath: logs/broker-0-master
+        - mountPath: /root/store
+          name: broker-storage
+          subPath: store/broker-0-master
+        - mountPath: /root/rocketmq/broker/conf/broker-common.conf
+          name: broker-config
+          subPath: broker-common.conf
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: broker-common.conf
+            path: broker-common.conf
+          name: broker-config
+        name: broker-config
+      - emptyDir: {}
+        name: broker-storage
+  updateStrategy:
+    type: RollingUpdate
+status:
+  collisionCount: 0
+  currentReplicas: 1
+  currentRevision: broker-0-master-f9b65668c
+  observedGeneration: 3
+  readyReplicas: 1
+  replicas: 1
+  updateRevision: broker-0-master-f9b65668c
+  updatedReplicas: 1

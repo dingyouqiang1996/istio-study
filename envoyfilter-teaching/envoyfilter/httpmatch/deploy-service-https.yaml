@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-https
+  labels:
+    app: service-https
+spec:
+  selector:
+    matchLabels:
+      app: service-https
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: service-https
+        version: v1
+    spec:
+      containers:
+        - name: csrf
+          image: mendhak/http-https-echo
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 443
+          env:
+          - name: HTTP_PORT
+            value: "0"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-https
+spec:
+  selector:
+    app: service-https
+  ports:
+    - name: tls-service-https
+      protocol: TCP
+      port: 443
+      targetPort: 443

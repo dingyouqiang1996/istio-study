@@ -1,0 +1,63 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: listener
+  namespace: istio 
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: LISTENER
+    match:
+      context: SIDECAR_INBOUND
+    patch:
+      operation: ADD
+      value:
+        name: proxy
+        address:
+          socket_address:
+            protocol: TCP
+            address: 0.0.0.0
+            port_value: 8083
+        filter_chains:
+        - filter_chain_match:
+            destination_port: 8083
+            transport_protocol: raw_buffer
+          filters:
+          - name: "envoy.filters.network.http_connection_manager"
+            typed_config:
+              "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+              stat_prefix: ingress_proxy
+              route_config:
+                name: route_a
+                virtual_hosts:
+                - name: envoy_cyz
+                  domains:
+                  - "*"
+                  routes:
+                  - match:
+                      prefix: "/"
+                    route:
+                      cluster: cluster123
+              http_filters:
+              - name: "envoy.filters.http.router"
+                typed_config:
+                  "@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router"
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value: 
+        name: "cluster123"
+        type: STATIC
+        connect_timeout: 0.5s
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: cluster123
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: 127.0.0.1
+                    port_value: 9080

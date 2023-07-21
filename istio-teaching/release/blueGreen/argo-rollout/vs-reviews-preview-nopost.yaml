@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: rollout-bluegreen-preview
+spec:
+  gateways:
+  - bookinfo-gateway
+  hosts:
+  - "*"
+  http:
+  - route:
+    - destination:
+        host: rollout-bluegreen-preview
+        port:
+          number: 9080

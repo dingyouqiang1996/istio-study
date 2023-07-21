@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: apply-to
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: FILTER_CHAIN
+    match:
+      listener:
+        portNumber: 8080
+    patch:
+      operation: MERGE
+      value:
+        name: test
+        filter_chain_match:
+          server_names:
+          - bookinfo.demo

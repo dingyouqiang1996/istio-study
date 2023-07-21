@@ -1,0 +1,93 @@
+kind: GatewayClass
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: acme-lb
+spec:
+  controller: acme.io/gateway-controller
+  parametersRef:
+    name: acme-lb
+    group: acme.io
+    kind: Parameters
+---
+kind: Gateway
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: multi-ns-gateway
+spec:
+  gatewayClassName: acme-lb
+  listeners:  # Use GatewayClass defaults for listener definition.
+  - protocol: HTTP
+    port: 80
+    routes:
+      kind: HTTPRoute
+      selector:
+        matchLabels:
+          product: baz
+      namespaces:
+        from: "All"
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: gateway-api-example-ns1
+---
+kind: HTTPRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: http-app-1
+  namespace: gateway-api-example-ns1
+  labels:
+    product: baz
+spec:
+  gateways:
+    allow: All
+  hostnames:
+  - "foo.com"
+  rules:
+  - matches:
+    - path:
+        type: Prefix
+        value: /bar
+    forwardTo:
+    - serviceName: my-foo-service1
+      port: 8080
+  - matches:
+    - headers:
+        type: Exact
+        values:
+          magic: foo
+      path:
+        type: Prefix
+        value: /some/thing
+    forwardTo:
+    - serviceName: my-foo-service2
+      port: 8080
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: gateway-api-example-ns2
+---
+kind: HTTPRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: http-app-2
+  namespace: gateway-api-example-ns2
+  labels:
+    product: baz
+spec:
+  gateways:
+    allow: FromList
+    gatewayRefs:
+    - name: multi-ns-gateway
+      namespace: default
+  hostnames:
+  - "bar.com"
+  rules:
+  - matches:
+    - path:
+        type: Prefix
+        value: /
+    forwardTo:
+    - serviceName: my-bar-service1
+      port: 8080

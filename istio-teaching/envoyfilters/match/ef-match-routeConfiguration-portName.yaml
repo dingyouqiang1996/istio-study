@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: VIRTUAL_HOST
+    match:
+      context: GATEWAY
+      routeConfiguration:
+        portName: http
+        gateway: istio/bookinfo-gateway
+        vhost:
+          name: "*:80"
+    patch:
+      operation: REMOVE
+  - applyTo: VIRTUAL_HOST
+    match:
+      context: GATEWAY
+      routeConfiguration:
+        portName: http
+        gateway: istio/bookinfo-gateway
+        name: "http.80"
+    patch:
+      operation: ADD
+      value:
+            name: "*:80"
+            domains:
+            - "*"
+            routes:
+            - match:
+                prefix: "/"
+              direct_response:
+                status: 200
+                body:
+                  inline_string: "example body\n"

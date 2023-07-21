@@ -1,0 +1,29 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: bookinfo
+spec:
+  revertOnDeletion: true
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: reviews-v1
+  service:
+    port: 9080
+    gateways:
+    - istio/bookinfo-gateway
+    hosts:
+    - "*"
+  analysis:
+    interval: 1m
+    threshold: 10
+    maxWeight: 50
+    stepWeight: 20
+    metrics:
+    - templateRef:
+        namespace: istio-system
+        name: not-found-percentage
+      name: not-found-percentage
+      thresholdRange:
+        max: 10
+      interval: 1m

@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rocketmq
+spec:
+  workloadSelector:
+    labels:
+      name: rocketmq
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        portNumber: 10911
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: REPLACE
+      value:
+            name: envoy.filters.network.rocketmq_proxy
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.rocketmq_proxy.v3.RocketmqProxy
+              stat_prefix: rocketmq
+              route_config:
+                name: rocketmq
+                routes:
+                - match:
+                    headers:
+                    - name: MQ
+                      suffix_match: mq
+                  route:
+                    cluster: outbound|10911||broker-0.default.svc.cluster.local
+                - match:
+                    headers:
+                    - name: MQ
+                      exact_match: user_mq2
+                  route:
+                    cluster: outbound|10911||broker-1.default.svc.cluster.local

@@ -1,0 +1,37 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: tcp
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 31400
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: REPLACE
+      value:
+          name: envoy.filters.network.tcp_proxy
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
+            cluster: outbound|9000|v1|tcp-echo.istio.svc.cluster.local
+            statPrefix: tcp-echo.istio.svc.cluster.local
+            hash_policy:
+            - source_ip: {}
+  - applyTo: CLUSTER
+    match:
+      cluster:
+        name: outbound|9000|v1|tcp-echo.istio.svc.cluster.local
+    patch:
+      operation: MERGE
+      value: 
+        lb_policy: RING_HASH
+        ring_hash_lb_config:
+          minimum_ring_size: 1024

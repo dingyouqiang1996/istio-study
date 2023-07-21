@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: istio-eastwest
+spec:
+  selector:
+    istio: eastwestgateway
+  servers:
+  - port:
+      number: 3306
+      name: tcp
+      protocol: TCP
+    hosts:
+    - mysql.vm.demo

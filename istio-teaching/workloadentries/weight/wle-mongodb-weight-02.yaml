@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1beta1
+kind: WorkloadEntry
+metadata:
+  name: mongo-wle-02
+spec:
+  weight: 80
+  address: 192.168.198.155
+  ports:
+    mongodb: 27017
+  labels:
+    app: mongodb
+    instance-id: vm2
+    type: vm

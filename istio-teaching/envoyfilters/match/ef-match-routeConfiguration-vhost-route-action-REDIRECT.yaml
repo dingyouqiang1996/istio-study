@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+    - applyTo: HTTP_ROUTE
+      match:
+        context: SIDECAR_INBOUND
+        routeConfiguration:
+          portNumber: 9080
+          vhost:
+            name: inbound|http|9080
+            route:
+              action: ANY
+      patch:
+        operation: MERGE
+        value:
+          match:
+            prefix: /mypage
+          redirect:
+             host_redirect: "127.0.0.1:9080"
+             path_redirect: "/productpage"
+             response_code: "PERMANENT_REDIRECT"

@@ -1,0 +1,12 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: reviews
+spec:
+  http:
+  - route:
+    - destination:
+        host: reviews
+        subset: v2
+        port:
+          number: 9080

@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: simple 
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.health_check
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.health_check.v3.HealthCheck
+          pass_through_mode: true
+          cache_time: 10ms
+          cluster_min_healthy_percentages:
+            outbound|9080||productpage.istio.svc.cluster.local:
+              value: 100
+          headers:
+          - name: test
+            present_match: false

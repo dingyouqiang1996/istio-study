@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jwt-server
+  labels:
+    app: jwt-server
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: jwt-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jwt-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jwt-server
+  template:
+    metadata:
+      labels:
+        app: jwt-server
+    spec:
+      containers:
+      - image: registry.cn-hangzhou.aliyuncs.com/hxpdocker/jwt-server:1.0
+        imagePullPolicy: IfNotPresent
+        name: jwt-server
+        ports:
+        - containerPort: 8080
+---

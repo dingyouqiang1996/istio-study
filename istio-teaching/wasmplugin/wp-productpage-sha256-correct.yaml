@@ -1,0 +1,12 @@
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: productpage
+  namespace: istio
+spec:
+  selector:
+    matchLabels:
+      app: productpage
+  url: oci://registry.cn-qingdao.aliyuncs.com/hxpdocker/wasm-rate-limiting:v1
+  phase: STATS	
+  sha256: d3f2d1b3c0ae26100e36a6ddb901ca55732aeea79329e43a14686c1338a1ed03

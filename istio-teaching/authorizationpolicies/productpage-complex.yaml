@@ -1,0 +1,33 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: productpage
+spec:
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: 
+        - cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
+        namespaces: 
+        - istio-system
+    to:
+    - operation:
+        methods: ["GET"]
+        paths: ["/productpage"]
+    - operation:
+        methods: ["GET"]
+        paths: ["/static/*"]
+    - operation:
+        methods: ["GET"]
+        paths: ["/api/v1/products/*"]
+    - operation:
+        methods: ["GET"]
+        paths: ["/logout"]
+    - operation:
+        methods: ["POST"]
+        paths: ["/login"]
+    when:
+    - key: source.ip
+      values:
+      - "172.20.0.0/16"

@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: reviews-canary
+spec:
+  gateways:
+  - bookinfo-gateway
+  hosts:
+  - "*"
+  http:
+  - route:
+    - destination:
+        host: reviews-canary
+        port:
+          number: 9080

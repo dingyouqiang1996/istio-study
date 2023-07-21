@@ -1,0 +1,13 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+ name: ratings-allow-all
+spec:
+ selector:
+   matchLabels:
+     app: ratings
+ action: ALLOW
+ rules:
+ - to:
+   - operation:
+       methods: ["GET", "POST"]

@@ -1,0 +1,60 @@
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service-server
+  labels:
+    app: product-service-server
+spec:
+  selector:
+    matchLabels:
+      app: product-service-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: product-service-server
+        version: v1
+    spec:
+      containers:
+        - name: csrf
+          image: registry.cn-qingdao.aliyuncs.com/hxpdocker/product-service-server:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service-client
+  labels:
+    app: product-service-client
+spec:
+  selector:
+    matchLabels:
+      app: product-service-client
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: product-service-client
+        version: v1
+    spec:
+      containers:
+        - name: csrf
+          image: registry.cn-qingdao.aliyuncs.com/hxpdocker/product-service-client:1.0
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+spec:
+  selector:
+    app: product-service-server
+  ports:
+    - name: grpc-product-service
+      protocol: TCP
+      port: 8081
+      targetPort: 8081

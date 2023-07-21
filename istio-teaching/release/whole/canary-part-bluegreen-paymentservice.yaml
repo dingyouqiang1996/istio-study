@@ -1,0 +1,37 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: paymentservice
+spec:
+  revertOnDeletion: true
+  provider: istio
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: paymentservice-v1
+  progressDeadlineSeconds: 60
+  service:
+    delegation: true
+    name: paymentservice
+    portName: grpc
+    port: 50051
+    targetPort: 50051
+    trafficPolicy:
+      loadBalancer:
+        consistentHash:
+          httpCookie:
+            name: shop_session-id
+            ttl: 0s
+  analysis:
+    interval: 30s
+    threshold: 10
+    iterations: 5
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 30s

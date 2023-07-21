@@ -1,0 +1,68 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: bookinfo
+spec:
+  revertOnDeletion: true
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: reviews-v1
+  service:
+    port: 9080
+    gateways:
+    - istio/bookinfo-gateway
+    hosts:
+    - "*"
+  analysis:
+    interval: 1m
+    threshold: 10
+    maxWeight: 50
+    stepWeight: 20
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 1m
+    webhooks:
+      - name: "start gate"
+        type: confirm-rollout
+        url: http://flagger-loadtester.istio-system/gate/approve
+#      - name: "helm test"
+#        type: pre-rollout
+#        url: http://flagger-loadtester.istio-system/
+#        timeout: 3m
+#        metadata:
+#          type: "helmv3"
+#          cmd: "test reviews -n istio"
+      - name: "load test"
+        type: rollout
+        url: http://flagger-loadtester.istio-system/
+        timeout: 15s
+        metadata:
+          cmd: "hey -z 1m -q 5 -c 2 http://reviews.istio:9080/reviews/0/"
+      - name: "traffic increase gate"
+        type: confirm-traffic-increase
+        url: http://flagger-loadtester.istio-system/gate/approve
+      - name: "promotion gate"
+        type: confirm-promotion
+        url: http://flagger-loadtester.istio-system/gate/approve
+#      - name: "notify"
+#        type: post-rollout
+#        url: http://telegram.bot:8080/
+#        timeout: 5s
+#        metadata:
+#          some: "message"
+      - name: "rollback gate"
+        type: rollback
+        url: http://flagger-loadtester.istio-system/rollback/check
+#      - name: "send to Slack"
+#        type: event
+#        url: http://event-recevier.notifications/slack
+#        metadata:
+#          environment: "test"
+#          cluster: "flagger-test"

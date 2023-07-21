@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: sleep
+spec:
+  workloadSelector:
+    labels:
+      app: sleep
+  outboundTrafficPolicy:
+    egressProxy:
+      host: "details.default.svc.cluster.local"
+      port:
+        number: 9080
+    mode: ALLOW_ANY

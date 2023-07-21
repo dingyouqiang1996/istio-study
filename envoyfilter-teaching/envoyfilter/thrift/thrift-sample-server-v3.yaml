@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thrift-sample-server-v3
+  labels:
+    app: thrift-sample-server
+spec:
+  selector:
+    matchLabels:
+      app: thrift-sample-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: thrift-sample-server
+        version: v3
+    spec:
+      containers:
+        - name: thrift-sample-server
+          image: registry.cn-hangzhou.aliyuncs.com/hxpdocker/thrift-sample-server:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9090
+---

@@ -1,0 +1,104 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: thrift-sample-server
+spec:
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        name: 10.68.153.249_9090    # sed -i .bak "s/\${thrift-sample-server-vip}/`kubectl get svc thrift-sample-server -n thrift -o=jsonpath='{.spec.clusterIP}'`/" istio/envoyfilter-thrift-proxy.yaml
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: REPLACE
+      value:
+        name: envoy.filters.network.thrift_proxy
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy
+          stat_prefix: "outbound|9090||thrift-sample-server.thrift.svc.cluster.local"
+          transport: AUTO_TRANSPORT
+          protocol: AUTO_PROTOCOL
+          thrift_filters:
+          - name: envoy.filters.thrift.ratelimit
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.filters.ratelimit.v3.RateLimit
+              domain: productpage-ratelimit
+              stage: 0
+              timeout: 3s
+              failure_mode_deny: true
+              rate_limit_service:
+                grpc_service:
+                  envoy_grpc:
+                    cluster_name: rate_limit_cluster
+                  timeout: 10s
+                transport_api_version: V3
+          - name: envoy.filters.thrift.router
+          route_config:
+            routes:
+            - match:
+                # empty string matches any request method name
+                method_name: ""
+              route:
+                rate_limits:
+                - stage: 0
+                  actions:
+                  - source_cluster: {}
+                weighted_clusters:
+                  clusters:
+                    - name: "outbound|9090|v1|thrift-sample-server.istio.svc.cluster.local"
+                      weight: 50
+                    - name: "outbound|9090|v2|thrift-sample-server.istio.svc.cluster.local"
+                      weight: 50
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        name: virtualInbound
+        filterChain:
+          destinationPort: 9090
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: REPLACE
+      value:
+        name: envoy.filters.network.thrift_proxy
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy
+          stat_prefix: inbound|9090||
+          transport: AUTO_TRANSPORT
+          protocol: AUTO_PROTOCOL
+          thrift_filters:
+          - name: envoy.filters.thrift.router
+          route_config:
+            routes:
+            - match:
+                # empty string matches any request method name
+                method_name: ""
+              route:
+                cluster: inbound|9090||
+                rate_limits:
+                - stage: 0
+                  actions:
+                  - source_cluster: {}
+  - applyTo: CLUSTER
+    match:
+        cluster:
+          service: ratelimit.istio.svc.cluster.local
+    patch:
+        operation: ADD
+        value:
+          name: rate_limit_cluster
+          type: STRICT_DNS
+          connect_timeout: 10s
+          lb_policy: ROUND_ROBIN
+          http2_protocol_options: {}
+          load_assignment:
+            cluster_name: rate_limit_cluster
+            endpoints:
+            - lb_endpoints:
+              - endpoint:
+                  address:
+                     socket_address:
+                      address: ratelimit.istio.svc.cluster.local
+                      port_value: 8081

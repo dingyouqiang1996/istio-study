@@ -1,0 +1,36 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: network
+  namespace: istio
+spec:
+  workloadSelector:
+    labels:
+      app: tcp-echo
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          destinationPort: 9000
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.network.wasm
+        typed_config:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.wasm.v3.Wasm
+                config:
+                  name: my_plugin
+                  configuration:
+                    "@type": type.googleapis.com/google.protobuf.StringValue
+                    value: |
+                      {}
+                  vm_config:
+                    runtime: "envoy.wasm.runtime.v8"
+                    code:
+                      local:
+                        filename: /var/local/lib/wasm-filters/main.wasm
+

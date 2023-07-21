@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: WorkloadGroup
+metadata:
+  name: httpd
+  namespace: vm-httpd
+spec:
+  metadata:
+    labels:
+      app: httpd
+      type: vm
+  template:
+#    ports:
+#      http: 80
+    serviceAccount: sa-httpd
+    network: ""

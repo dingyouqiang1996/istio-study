@@ -1,0 +1,17 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: demo
+  meshConfig:
+    accessLogFile: /dev/stdout
+    localityLbSetting:
+      enabled: true
+      distribute:
+      - from: us-west/zone1/*
+        to:
+          "us-west/zone1/*": 80
+          "us-west/zone2/*": 20
+      - from: us-west/zone2/*
+        to:
+          "us-west/zone1/*": 20
+          "us-west/zone2/*": 80

@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: tcp-echo
+spec:
+  hosts:
+  - "org.apache.dubbo.samples.basic.api.demoservice"
+  tcp:
+  - match:
+    - port: 20880
+    route:
+    - destination:
+        host: dubbo-provider
+        port:
+          number: 20880

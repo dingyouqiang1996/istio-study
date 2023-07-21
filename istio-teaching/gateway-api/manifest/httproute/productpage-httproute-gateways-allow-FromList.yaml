@@ -1,0 +1,24 @@
+kind: HTTPRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: productpage
+  labels:
+    gateway: bookinfo
+spec:
+  gateways:
+    allow: FromList
+    gatewayRefs:
+    - namespace: istio-system
+      name: bookinfo
+  hostnames: ["*"] 
+  rules:
+  - matches:
+    - path:
+        type: Prefix
+        value: /productpage
+    - path:
+        type: Prefix
+        value: /static
+    forwardTo:
+    - serviceName: productpage
+      port: 9080

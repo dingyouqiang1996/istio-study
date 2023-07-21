@@ -1,0 +1,72 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: httpconnectionmanager
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                route_config:
+                  name: test
+                  virtual_hosts:
+                  - name: test
+                    domains:
+                    - "*"
+                    routes:
+                    - name: testroute
+                      match: 
+                        prefix: /product
+                      route:
+                        retry_policy:
+                          retry_on: 5xx,gateway-error,reset,connect-failure
+                          num_retries: 3
+                          per_try_timeout: 10s
+                          #per_try_idle_timeout: 10s
+                          retry_priority:
+                            name: envoy.retry_priorities.previous_priorities
+                            typed_config:
+                              "@type": type.googleapis.com/envoy.extensions.retry.priority.previous_priorities.v3.PreviousPrioritiesConfig
+                              update_frequency: 2
+                          retry_host_predicate:
+                          - name: envoy.retry_host_predicates.previous_hosts  
+                          host_selection_retry_max_attempts: 3
+                          retriable_status_codes: 
+                          - 503 
+                          retry_back_off:
+                            base_interval: 10ms
+                            max_interval: 50ms
+                          rate_limited_retry_back_off:
+                            reset_headers:
+                            - name: Retry-After
+                              format: SECONDS
+                            - name: X-RateLimit-Reset
+                              format: UNIX_TIMESTAMP
+                            max_interval: "300s"
+                          retriable_headers:
+                          - name: test
+                            exact_match: test
+                          retriable_request_headers:
+                          - name: test
+                            exact_match: test
+                        weighted_clusters:
+                          clusters:
+                          - name: outbound|9080||productpage.istio.svc.cluster.local
+                            weight: 100
+                          total_weight: 100
+                          runtime_key_prefix: test
+                       

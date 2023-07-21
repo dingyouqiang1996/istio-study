@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: simple
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 31400 
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.network.sni_cluster
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.network.sni_cluster.v3.SniCluster
+  - applyTo: CLUSTER
+    match:
+      cluster:
+        name: outbound|9000||tcp-echo.istio.svc.cluster.local
+    patch:
+      operation: MERGE
+      value:
+                transport_socket:
+                  name: envoy.transport_sockets.tls
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+                    sni: outbound|9000|v2|tcp-echo.istio.svc.cluster.local
+      
+

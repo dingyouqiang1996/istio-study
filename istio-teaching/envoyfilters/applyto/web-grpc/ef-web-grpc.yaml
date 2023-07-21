@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: apply-to
+spec:
+  workloadSelector:
+    labels:
+      app: web-grpc
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+        listener:
+          filterChain:
+            destinationPort: 50051
+            transportProtocol: "tls"
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: istio.metadata_exchange
+    patch:
+        operation: INSERT_BEFORE
+        value:           
+          name: envoy.filters.http.grpc_web
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb 

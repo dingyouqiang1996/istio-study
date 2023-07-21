@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: mysql
+spec:
+  host: mysql.vm.demo
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 1
+        connectTimeout: 30ms
+      http:
+        maxRequestsPerConnection: 1
+        http1MaxPendingRequests: 1
+    outlierDetection:
+      consecutive5xxErrors: 1
+      interval: 5s
+      baseEjectionTime: 60s
+      maxEjectionPercent: 100
+      #minHealthPercent: 0

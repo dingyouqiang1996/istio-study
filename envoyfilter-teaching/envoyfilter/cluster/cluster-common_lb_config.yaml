@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: cluster
+  namespace: istio-system 
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      cluster:
+        name: outbound|9080||productpage.istio.svc.cluster.local
+    patch:
+      operation: MERGE
+      value:
+         lb_policy: LEAST_REQUEST
+         common_lb_config:
+           healthy_panic_threshold:
+             value: 50
+           zone_aware_lb_config:
+             routing_enabled:
+               value: 100
+             min_cluster_size: 6
+             fail_traffic_on_panic: true
+           update_merge_window: 60s
+           ignore_new_hosts_until_first_hc: true
+           close_connections_on_host_set_change: true
+           consistent_hashing_lb_config:
+             use_hostname_for_hashing: true
+             hash_balance_factor: 120

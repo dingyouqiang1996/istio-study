@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  creationTimestamp: "2021-10-24T08:51:07Z"
+  generation: 3
+  name: name-service
+  namespace: istio
+  ownerReferences:
+  - apiVersion: rocketmq.apache.org/v1alpha1
+    blockOwnerDeletion: true
+    controller: true
+    kind: NameService
+    name: name-service
+    uid: ca52e4e8-6d8f-4cb7-acec-4258a52c5485
+  resourceVersion: "5312749"
+  uid: e18dce53-1491-41a0-8173-bbc0a8d58de3
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: name_service
+      name_service_cr: name-service
+  serviceName: ""
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+      creationTimestamp: null
+      labels:
+        app: name_service
+        name_service_cr: name-service
+    spec:
+      containers:
+      - image: apacherocketmq/rocketmq-nameserver:4.5.0-alpine-operator-0.3.0
+        imagePullPolicy: IfNotPresent
+        name: name-service
+        ports:
+        - containerPort: 9876
+          hostPort: 9876
+          name: main
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /root/logs
+          name: namesrv-storage
+          subPath: logs
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: namesrv-storage
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+status:
+  collisionCount: 0
+  currentReplicas: 1
+  currentRevision: name-service-85b5b4896
+  observedGeneration: 3
+  readyReplicas: 1
+  replicas: 1
+  updateRevision: name-service-85b5b4896
+  updatedReplicas: 1

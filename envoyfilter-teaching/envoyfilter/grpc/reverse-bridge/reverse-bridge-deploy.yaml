@@ -1,0 +1,76 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ping-http
+  labels:
+    app: ping-http
+spec:
+  ports:
+  - port: 8888
+    name: http
+  selector:
+    app: ping-http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ping-http
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ping-http
+  template:
+    metadata:
+      labels:
+        app: ping-http
+    spec:
+      containers:
+      - name: ping-http
+        image: registry.cn-beijing.aliyuncs.com/hxpdocker/ping-http:latest
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ping-grpc
+  labels:
+    app: ping-grpc
+spec:
+  ports:
+  - port: 10005
+    name: grpc
+  selector:
+    app: ping-grpc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ping-grpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ping-grpc
+  template:
+    metadata:
+      labels:
+        app: ping-grpc
+    spec:
+      containers:
+      - name: ping-grpc
+        image: registry.cn-beijing.aliyuncs.com/hxpdocker/ping-grpc:latest
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 10005

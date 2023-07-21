@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rm
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+        overload_manager:
+          actions:
+          - name: envoy.overload_actions.shrink_heap
+            triggers:
+            - name: envoy.resource_monitors.injected_resource
+              threshold:
+                value: 0.9
+          - name: envoy.overload_actions.stop_accepting_requests
+            triggers:
+            - name: envoy.resource_monitors.injected_resource
+              threshold:
+                value: 0.95
+          refresh_interval: 0.25s
+          resource_monitors:
+          - name: envoy.resource_monitors.injected_resource
+            typed_config:
+              '@type': type.googleapis.com/envoy.extensions.resource_monitors.injected_resource.v3.InjectedResourceConfig
+              filename: /var/local/lib/injected-resource/injected_resource.txt

@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: statictis
+spec:
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+          stats_sinks:
+          - name: envoy.stat_sinks.statsd
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.metrics.v3.StatsdSink
+              address: 
+                socket_address:
+                  address: 10.68.124.118
+                  port_value: 8125
+                  protocol: UDP
+              prefix: statictis

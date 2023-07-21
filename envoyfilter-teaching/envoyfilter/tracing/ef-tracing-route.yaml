@@ -1,0 +1,67 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: tracing
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                route_config:
+                  name: test
+                  virtual_hosts:
+                  - name: test
+                    domains:
+                    - "*"
+                    routes:
+                    - name: testroute
+                      match: 
+                        path: /productpage
+                        case_sensitive: false
+                      route:
+                        cluster: outbound|9080||productpage.istio.svc.cluster.local
+                      tracing:
+                        custom_tags:
+                        - tag: test1
+                          literal:
+                            value: test1
+                        - tag: test2
+                          environment:
+                            name: myenv
+                            default_value: test2
+                        - tag: test3
+                          request_header:
+                            name: test3
+                            default_value: test3
+                        - tag: test4
+                          metadata:
+                            kind: 
+                              request: {}
+                            metadata_key:
+                              key: envoy.lb
+                              path:
+                              - key: test4
+                            default_value: test4
+                        overallSampling:
+                          numerator: 20
+                          denominator: HUNDRED
+                        randomSampling:
+                          numerator: 30
+                          denominator: HUNDRED
+                        clientSampling:
+                          numerator: 30
+                          denominator: HUNDRED

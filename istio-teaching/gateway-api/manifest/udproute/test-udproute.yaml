@@ -1,0 +1,13 @@
+kind: UDPRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: udp-app-1
+  labels:
+    app: foo
+spec:
+  gateways:
+    allow: All
+  rules:
+  - forwardTo:
+    - serviceName: tcp-echo
+      port: 9000

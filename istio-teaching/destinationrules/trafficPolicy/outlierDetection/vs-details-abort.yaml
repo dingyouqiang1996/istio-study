@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: details
+  namespace: istio
+spec:
+  hosts:
+  - details
+  http:
+  - route:
+    - destination:
+        host: details
+    fault:
+      abort:
+        httpStatus: 500
+        percentage:
+          value: 50

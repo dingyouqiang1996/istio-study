@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rm
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+        overload_manager:
+          actions:
+          - name: envoy.overload_actions.reset_high_memory_stream
+            triggers:
+            - name: envoy.resource_monitors.fixed_heap
+              scaled:
+                scaling_threshold: 0.9
+                saturation_threshold: 0.95
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.overload.v3.ScaleTimersOverloadActionConfig
+              timer_scale_factors:
+                - timer: HTTP_DOWNSTREAM_CONNECTION_IDLE
+                  min_timeout: 2s
+          refresh_interval: 0.25s
+          resource_monitors:
+          - name: envoy.resource_monitors.fixed_heap
+            typed_config:
+              '@type': type.googleapis.com/envoy.extensions.resource_monitors.fixed_heap.v3.FixedHeapConfig
+              max_heap_size_bytes: 1073741824

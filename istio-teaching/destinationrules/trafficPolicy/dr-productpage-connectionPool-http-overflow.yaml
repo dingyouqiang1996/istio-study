@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: productpage
+spec:
+  host: productpage
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  trafficPolicy:
+    connectionPool:
+      http:
+        h2UpgradePolicy: DEFAULT
+        http1MaxPendingRequests: 1
+        http2MaxRequests: 1
+        idleTimeout: 10s
+        maxRequestsPerConnection: 1
+        maxRetries: 1
+      tcp:
+        connectTimeout: 3ms
+        maxConnections: 1
+        tcpKeepalive:
+          interval: 75s
+          probes: 10
+          time: 7200s

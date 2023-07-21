@@ -1,0 +1,37 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ef-bootstrap
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+        admin:
+          access_log_path: "/dev/null"
+          address: 
+            socket_address: 
+              address: "127.0.0.1"
+              port_value: 15000
+        overload_manager:
+          actions:
+          - name: envoy.overload_actions.shrink_heap
+            triggers:
+            - name: envoy.resource_monitors.fixed_heap
+              threshold:
+                value: 0.9
+          - name: envoy.overload_actions.stop_accepting_requests
+            triggers:
+            - name: envoy.resource_monitors.fixed_heap
+              threshold:
+                value: 0.95
+          refresh_interval: 0.25s
+          resource_monitors:
+          - name: envoy.resource_monitors.fixed_heap
+            typed_config:
+              '@type': type.googleapis.com/envoy.config.resource_monitor.fixed_heap.v3.FixedHeapConfig
+              max_heap_size_bytes: 1073741824.0

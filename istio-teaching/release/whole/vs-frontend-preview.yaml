@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: rollout-bluegreen-active
+spec:
+  gateways:
+  - frontend-gateway
+  hosts:
+  - "myshop-1.demo"
+  http:
+  - route:
+    - destination:
+        host: rollout-bluegreen-active
+        port:
+          number: 8080
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: rollout-bluegreen-preview
+spec:
+  gateways:
+  - frontend-gateway
+  hosts:
+  - "myshop-2.demo"
+  http:
+  - route:
+    - destination:
+        host: rollout-bluegreen-preview
+        port:
+          number: 8080

@@ -1,0 +1,2 @@
+
+header={kid=cIcAfQ3B8kj2ucJTDABS7jTqVQ5fjwKQV7whPNLFCW4, typ=JWT, alg=RS256},body={sub=testing@secure.istio.io, scope=[scope1, scope2], iss=testing@secure.istio.io, exp=1659837999, iat=1656300608, group=[group1, group2]},signature=UnSqkJVq7uTtk-B4s0QysbMGZ2YF3ObdZZ6Uintp8OIn5drLiMqsI2gkOufL_bwcPCWDSTvMN8A9K6vZn0qRfx70DeniiDi6-qzjUdSSq0-oE8hvE62iIb6m3ZL2U9aGuGM_eXwD6WrmzZTwcT4-rkSn1oqYNl21y0dwZ39jCIw6qtgmtqw6C3CC0SWELI9b8zvrrXsAaw0EfzZwIjuLgxCLJG1yZFUJW7s8vhjmSIkd9mcqTA6clIhRvdo5ATUrPNDXV5oAes-6qxkLAfN_HNRiZWLuzAGrVagAKiNXGyNxW33xGqDiVNb459aAVS_Dv3Zr9w19EmLdpVlmOpn4Qg

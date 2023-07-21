@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+data:
+  config.yaml: |
+    domain: productpage-ratelimit
+    descriptors:
+      - key: test
+        value: "outbound_.9080_._.productpage.istio.svc.cluster.local"
+        rate_limit:
+          unit: minute
+          requests_per_unit: 4
+      - key: test
+        rate_limit:
+          unit: minute
+          requests_per_unit: 10

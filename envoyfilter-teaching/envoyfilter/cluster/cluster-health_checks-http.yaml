@@ -1,0 +1,100 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: cluster
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        #name: 0.0.0.0_8080  
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+        name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+          codec_type: AUTO
+          stat_prefix: ingress_http
+          route_config:
+            name: http.8080
+            virtual_hosts:
+            - name: “*.8080”
+              domains:
+              - "*"
+              routes:
+              - match:
+                  caseSensitive: true
+                  headers:
+                  - name: :method
+                    safeRegexMatch:
+                      googleRe2: {}
+                      regex: G.*T
+                  prefix: /
+                route:
+                  cluster: productpage_cluster
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value:
+          name: productpage_cluster
+          type: STRICT_DNS
+          connect_timeout: 10s
+          lb_policy: ROUND_ROBIN
+          health_checks:
+          - timeout: 10s
+            interval: 20s
+            initial_jitter: 1s
+            interval_jitter: 1s
+            interval_jitter_percent: 50
+            unhealthy_threshold: 5
+            healthy_threshold: 3
+            reuse_connection: true
+            no_traffic_interval: 60s
+            no_traffic_healthy_interval: 100s
+            unhealthy_interval: 10s
+            unhealthy_edge_interval: 30s
+            healthy_edge_interval: 30s
+            always_log_health_check_failures: false
+            tls_options:
+              alpn_protocols:
+              - http1.1
+              - h2
+            transport_socket_match_criteria:
+              useMTLS: false
+            http_health_check:
+              host: "productpage.istio.svc.cluster.local:9080"
+              path: /productpage
+              request_headers_to_add:
+              - header:
+                  key: test
+                  value: test
+                append: true
+              request_headers_to_remove:
+              - test2
+              expected_statuses:
+              - start: 200
+                end: 201
+              #retriable_statuses:
+              #- start: 401
+              #  end: 500
+              codec_client_type: HTTP1
+              service_name_matcher:
+                prefix: "product"
+          load_assignment:
+            cluster_name: productpage_cluster
+            endpoints:
+            - lb_endpoints:
+              - endpoint:
+                  address:
+                     socket_address:
+                      address: productpage.istio.svc.cluster.local
+                      port_value: 9080

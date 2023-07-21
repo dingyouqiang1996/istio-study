@@ -1,0 +1,57 @@
+kind: GatewayClass
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: acme-lb
+spec:
+  controller: acme.io/gateway-controller
+  parametersRef:
+    name: acme-lb
+    group: acme.io
+    kind: Parameters
+---
+kind: Gateway
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: my-tcp-gateway
+spec:
+  gatewayClassName: acme-lb
+  listeners:
+  - protocol: TCP
+    port: 8080
+    routes:
+      kind: TCPRoute
+      selector:
+        matchLabels:
+          "app": "foo"
+  - protocol: TCP
+    port: 8090
+    routes:
+      kind: TCPRoute
+      selector:
+        matchLabels:
+          "app": "bar"
+---
+kind: TCPRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: tcp-app-1
+  labels:
+    app: foo
+spec:
+  rules:
+  - forwardTo:
+    - serviceName: my-foo-service
+      port: 6000
+---
+kind: TCPRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: tcp-app-2
+  namespace: default
+  labels:
+    app: bar
+spec:
+  rules:
+  - forwardTo:
+    - serviceName: my-bar-service
+      port: 6000

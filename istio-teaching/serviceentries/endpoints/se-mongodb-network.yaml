@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: mongodb-se
+spec:
+  hosts:
+  - mymongodb.demo 
+  addresses:
+  - "192.168.198.158/32"
+  ports:
+  - number: 27017
+    name: mongodb
+    protocol: MONGO
+  location: MESH_EXTERNAL
+  resolution: STATIC
+  endpoints:
+  - address: 192.168.198.154
+    network: nn1
+  - address: 192.168.198.155

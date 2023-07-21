@@ -1,0 +1,45 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: apply-to
+spec:
+  configPatches:
+  - applyTo: EXTENSION_CONFIG
+    patch:
+      operation: ADD 
+      value:
+        name: my-wasm-extension
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+          config:
+            root_id: my-wasm-root-id
+            vm_config:
+              vm_id: my-wasm-vm-id
+              runtime: envoy.wasm.runtime.v8
+              code:
+                local:
+                  inline_string: "envoy.wasm.stats"
+                #remote:
+                #  http_uri:
+                #    uri: http://my-wasm-binary-uri
+            configuration:
+              "@type": "type.googleapis.com/google.protobuf.StringValue"
+              value: |
+                {}
+  - applyTo: HTTP_FILTER
+    match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.router
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: my-wasm-extension 
+        config_discovery:
+          config_source:
+            ads: {}
+          type_urls: ["type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm"]

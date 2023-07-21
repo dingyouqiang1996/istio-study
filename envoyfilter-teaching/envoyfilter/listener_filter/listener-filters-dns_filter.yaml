@@ -1,0 +1,126 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: listener
+  namespace: istio 
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: LISTENER
+    match:
+      context: SIDECAR_INBOUND
+    patch:
+      operation: ADD
+      value:
+        name: proxy
+        address:
+          socket_address:
+            protocol: TCP
+            address: 0.0.0.0
+            port_value: 8083
+        metadata:
+          filter_metadata:
+            envoy.lb:
+              test: test
+        listener_filters:
+        - name: envoy.filters.udp_listener.dns_filter
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.udp.dns_filter.v3.DnsFilterConfig"
+            stat_prefix: "dns_filter_prefix"
+            client_config:
+              #resolution_timeout: 5s
+              dns_resolution_config:
+                dns_resolver_options:
+                  use_tcp_for_dns_lookups: false
+                  no_default_search_domain: false
+                resolvers:
+                - socket_address:
+                    address: "8.8.8.8"
+                    port_value: 53
+                - socket_address:
+                    address: "8.8.4.4"
+                    port_value: 53
+              max_pending_lookups: 256
+            server_config:
+              inline_dns_table:
+                virtual_domains:
+                  - name: "www.domain1.com"
+                    endpoint:
+                      address_list:
+                        address:
+                        - 127.0.0.1
+                  - name: "www.domain2.com"
+                    endpoint:
+                      address_list:
+                        address:
+                          - 2001:8a:c1::2800:7
+                  - name: "www.domain3.com"
+                    endpoint:
+                      address_list:
+                        address:
+                        - 10.0.3.1
+                  - name: "www.domain4.com"
+                    endpoint:
+                      cluster_name: cluster_0
+                  - name: "voip.domain5.com"
+                    endpoint:
+                      service_list:
+                        services:
+                          - service_name: "sip"
+                            protocol: { number: 6 }
+                            ttl: 86400s
+                            targets:
+                            - host_name: "primary.voip.domain5.com"
+                              priority: 10
+                              weight: 30
+                              port: 5060
+                            - host_name: "secondary.voip.domain5.com"
+                              priority: 10
+                              weight: 20
+                              port: 5060
+                            - host_name: "backup.voip.domain5.com"
+                              priority: 10
+                              weight: 10
+                              port: 5060
+        filter_chains:
+        - filter_chain_match:
+            "transport_protocol": "raw_buffer"
+          filters:
+          - name: "envoy.filters.network.http_connection_manager"
+            typed_config:
+              "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+              stat_prefix: ingress_proxy
+              route_config:
+                name: route_a
+                virtual_hosts:
+                - name: envoy_cyz
+                  domains:
+                  - "*"
+                  routes:
+                  - match:
+                      prefix: "/"
+                    route:
+                      cluster: cluster123
+              http_filters:
+              - name: "envoy.filters.http.router"
+                typed_config:
+                  "@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router"
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value: 
+        name: "cluster123"
+        type: STRICT_DNS
+        connect_timeout: 0.5s
+        lb_policy: ROUND_ROBIN
+        load_assignment:
+          cluster_name: cluster123
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: www.domain1.com
+                    port_value: 9080

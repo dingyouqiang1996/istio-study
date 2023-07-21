@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: apply-to
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: REMOVE
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        portNumber: 8080
+    patch:
+      operation: ADD
+      value:
+            name: envoy.filters.network.direct_response
+            typed_config:
+                 "@type": "type.googleapis.com/envoy.extensions.filters.network.direct_response.v3.Config"
+                 response:
+                   inline_string: "test"

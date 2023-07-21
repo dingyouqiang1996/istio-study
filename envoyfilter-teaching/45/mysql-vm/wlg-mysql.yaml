@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: WorkloadGroup
+metadata:
+  name: httpd
+  namespace: vm
+spec:
+  metadata:
+    labels:
+      app: mysql
+      type: vm
+  template:
+    serviceAccount: sa-mysql
+    network: network2

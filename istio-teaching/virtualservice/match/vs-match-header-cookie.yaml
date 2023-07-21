@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ratings
+spec:
+  hosts:
+  - ratings
+  http:
+  - match:
+    - headers:
+        cookie:
+          #regex: "^(.*?;)?(end-user=jason)(;.*)?$"
+          #regex: "^(.*;?)?(user=jason)(;.*)?"
+          #regex: ".*(user=jason).*"
+          regex: "^(.*?;)?(.*)(;.*)?$"
+    route:
+    - destination:
+        host: ratings
+        subset: v1

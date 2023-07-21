@@ -1,0 +1,74 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: name-service
+spec:
+  selector:
+    app: name_service
+  ports:
+    - name: tcp-name
+      protocol: TCP
+      port: 9876
+      targetPort: 9876
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker-0
+spec:
+  selector:
+    app: broker
+    broker_cr: broker
+    statefulset.kubernetes.io/pod-name: broker-0-master-0
+  ports:
+    - name: tcp-vip
+      protocol: TCP
+      port: 10909
+      targetPort: 10909
+    - name: tcp-main
+      protocol: TCP
+      port: 10911
+      targetPort: 10911
+    - name: tcp-ha
+      protocol: TCP
+      port: 10912
+      targetPort: 10912
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker-1
+spec:
+  selector:
+    app: broker
+    broker_cr: broker
+    statefulset.kubernetes.io/pod-name: broker-1-master-0
+  ports:
+    - name: tcp-vip
+      protocol: TCP
+      port: 10909
+      targetPort: 10909
+    - name: tcp-main
+      protocol: TCP
+      port: 10911
+      targetPort: 10911
+    - name: tcp-ha
+      protocol: TCP
+      port: 10912
+      targetPort: 10912
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: console
+spec:
+  type: NodePort
+  selector:
+    app: rocketmq-console
+  ports:
+    - name: tcp-console
+      protocol: TCP
+      port: 8080
+      targetPort: 8080

@@ -1,0 +1,12 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: demo
+  meshConfig:
+    accessLogFile: /dev/stdout
+    configSources: 
+    - address: https://192.168.229.131:6443
+      tlsSettings:
+        mode: ISTIO_MUTUAL
+      subscribedResources:
+      - SERVICE_REGISTRY

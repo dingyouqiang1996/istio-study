@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paymentservice-v1
+spec:
+  selector:
+    matchLabels:
+      app: paymentservice
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: paymentservice
+        version: v1
+        line: v1 
+      annotations:
+        sidecar.istio.io/userVolumeMount: '[{"name":"wasm", "mountPath":"/var/local/lib/wasm-filters", "readonly":true},{"name":"wasm-2", "mountPath":"/var/local/lib/wasm-filters-2", "readonly":true},{"name":"wasm-3", "mountPath":"/var/local/lib/wasm-filters-3", "readonly":true}]'
+        sidecar.istio.io/userVolume: '[{"name":"wasm", "configmap":{"name":"wasm"}},{"name":"wasm-2", "configmap":{"name":"wasm-2"}},{"name":"wasm-3", "configmap":{"name":"wasm-3"}}]'
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: server
+        image: alexshu/paymentservice:v0.2.1
+        ports:
+        - containerPort: 50051
+        env:
+        - name: PORT
+          value: "50051"
+        readinessProbe:
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:50051"]
+        livenessProbe:
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:50051"]

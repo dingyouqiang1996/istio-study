@@ -1,0 +1,111 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        portNumber: 9080
+        filterChain:
+          destinationPort: 9080
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:         
+          name: envoy.filters.http.rbac
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC
+            rules:
+              policies:
+                ns[istio]-policy[productpage]-rule[0]:
+                  permissions:
+                  - andRules:
+                      rules:
+                      - orRules:
+                          rules:
+                          - header:
+                              exactMatch: GET
+                              name: ":method"
+                      - orRules:
+                          rules:
+                          - urlPath:
+                              path:
+                                exact: /productpage
+                  - andRules:
+                      rules:
+                      - orRules:
+                          rules:
+                          - header:
+                              exactMatch: GET
+                              name: ":method"
+                      - orRules:
+                          rules:
+                          - urlPath:
+                              path:
+                                prefix: /static/
+                  - andRules:
+                      rules:
+                      - orRules:
+                          rules:
+                          - header:
+                              exactMatch: GET
+                              name: ":method"
+                      - orRules:
+                          rules:
+                          - urlPath:
+                              path:
+                                prefix: /api/v1/products/
+                  - andRules:
+                      rules:
+                      - orRules:
+                          rules:
+                          - header:
+                              exactMatch: GET
+                              name: ":method"
+                      - orRules:
+                          rules:
+                          - urlPath:
+                              path:
+                                exact: /logout
+                  - andRules:
+                      rules:
+                      - orRules:
+                          rules:
+                          - header:
+                              exactMatch: POST
+                              name: ":method"
+                      - orRules:
+                          rules:
+                          - urlPath:
+                              path:
+                                exact: /login
+                  principals:
+                  - andIds:
+                      ids:
+                      - orIds:
+                          ids:
+                          - authenticated:
+                              principalName:
+                                exact: spiffe://cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account
+                      - orIds:
+                          ids:
+                          - authenticated:
+                              principalName:
+                                safeRegex:
+                                  googleRe2: {}
+                                  regex: .*/ns/istio-system/.*
+                      - orIds:
+                          ids:
+                          - directRemoteIp:
+                              addressPrefix: 172.20.0.0
+                              prefixLen: 16
+            shadowRulesStatPrefix: istio_dry_run_allow_

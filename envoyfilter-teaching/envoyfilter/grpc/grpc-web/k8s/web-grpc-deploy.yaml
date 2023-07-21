@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-grpc
+  labels:
+    app: web-grpc
+spec:
+  selector:
+    matchLabels:
+      app: web-grpc
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-grpc
+        version: v1
+    spec:
+      containers:
+        - name: csrf
+          image: registry.cn-hangzhou.aliyuncs.com/hxpdocker/server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-grpc
+spec:
+  selector:
+    app: web-grpc
+  ports:
+    - name: grpc-web-grpc
+      protocol: TCP
+      port: 50051
+      targetPort: 50051
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-grpc-client
+  labels:
+    app: web-grpc-client
+spec:
+  selector:
+    matchLabels:
+      app: web-grpc-client
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-grpc-client
+        version: v1
+    spec:
+      containers:
+        - name: csrf
+          image: registry.cn-hangzhou.aliyuncs.com/hxpdocker/client:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-grpc-client
+spec:
+  selector:
+    app: web-grpc-client
+  ports:
+    - name: http-web-grpc-client
+      protocol: TCP
+      port: 8080
+      targetPort: 8080

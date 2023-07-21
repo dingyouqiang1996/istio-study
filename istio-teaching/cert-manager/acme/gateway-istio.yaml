@@ -1,0 +1,16 @@
+apiVersion: networking.x-k8s.io/v1alpha1
+kind: Gateway
+metadata:
+  name: istio
+spec:
+  gatewayClassName: istio
+  listeners:
+  - protocol: HTTP
+    port: 80
+    routes:
+      kind: HTTPRoute
+      selector:
+        matchLabels:
+          gateway: http01-solver
+      namespaces:
+        from: All

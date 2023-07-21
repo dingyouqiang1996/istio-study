@@ -1,0 +1,11 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: default
+spec:
+  ingress:
+  - port:
+      number: 9080
+      protocol: HTTP
+      name: http
+    defaultEndpoint: 127.0.0.1:9080

@@ -1,0 +1,68 @@
+<html>
+<head><title></title></head>
+<body>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>  
+<script>
+$(function(){
+	$("#cors").click(
+                function(){
+			$.ajax({
+                                type:"get",
+                                dataType : "html",
+				url:"http://bookinfo.demo:30986/productpage",
+				success:function(data){
+					alert(data);
+				}
+			})
+                });
+	
+        $("#cors2").click(
+                function(){
+                        $.ajax({
+                                type:"get",
+                                dataType : "json",
+                                url:"http://bookinfo.demo:30986/reviews/1",
+                                contentType : 'application/json;charset=UTF-8',
+                                success:function(data){
+                                        var jsonStr = JSON.stringify(data);
+                                        alert(jsonStr);
+                                }
+                        })
+                });
+          $("#cors3").click(
+                function(){
+                        $.ajax({
+                                type:"delete",
+                                contentType : 'application/json;charset=UTF-8',
+                                dataType : "json",
+                                url:"http://bookinfo.demo:30986/reviews/1",
+                                success:function(data){
+                                        var jsonStr = JSON.stringify(data);
+                                        alert(jsonStr);
+                                }
+                        })
+                });
+           $("#cors4").click(
+                function(){
+                        $.ajax({
+                                type:"get",
+                                contentType : 'application/json;charset=UTF-8',
+                                dataType : "json",
+                                headers:{"X-Custom-Header":"value"},
+                                url:"http://bookinfo.demo:30986/reviews/1",
+                                success:function(data){
+                                        var jsonStr = JSON.stringify(data);
+                                        alert(jsonStr);
+                                }
+                        })
+                });
+         
+});
+
+</script>
+<input type="button" id="cors" value="简单请求"/>
+<input type="button" id="cors2" value="非简单请求"/>
+<input type="button" id="cors3" value="非简单请求delete"/>
+<input type="button" id="cors4" value="非简单请求headers"/>
+</body>
+</html>

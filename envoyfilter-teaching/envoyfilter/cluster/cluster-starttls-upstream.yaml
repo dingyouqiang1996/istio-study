@@ -1,0 +1,54 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: cluster
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: FILTER_CHAIN
+    match:
+      listener:
+        filterChain:
+          transportProtocol: raw_buffer
+          destinationPort: 9080
+    patch:
+      operation: MERGE
+      value:
+        transport_socket:
+          name: envoy.transport_sockets.starttls
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.transport_sockets.starttls.v3.StartTlsConfig
+            cleartext_socket_config: {}
+            tls_socket_config:
+                    require_client_certificate: true
+                    common_tls_context:
+                      combinedValidationContext:
+                        defaultValidationContext:
+                          matchSubjectAltNames:
+                          - exact: spiffe://cluster.local/ns/istio/sa/bookinfo-productpage
+                        validationContextSdsSecretConfig:
+                          name: ROOTCA
+                          sdsConfig:
+                            apiConfigSource:
+                              apiType: GRPC
+                              grpcServices:
+                              - envoyGrpc:
+                                  clusterName: sds-grpc
+                              setNodeOnFirstMessageOnly: true
+                              transportApiVersion: V3
+                            initialFetchTimeout: 0s
+                            resourceApiVersion: V3
+                      tlsCertificateSdsSecretConfigs:
+                      - name: default
+                        sdsConfig:
+                          apiConfigSource:
+                            apiType: GRPC
+                            grpcServices:
+                            - envoyGrpc:
+                                clusterName: sds-grpc
+                            setNodeOnFirstMessageOnly: true
+                            transportApiVersion: V3
+                          initialFetchTimeout: 0s
+                          resourceApiVersion: V3

@@ -1,0 +1,65 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: metadata
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                route_config:
+                  name: test
+                  virtual_hosts:
+                  - name: test
+                    domains:
+                    - "*"
+                    routes:
+                    - name: testroute
+                      match: 
+                        prefix: /product
+                      route:
+                        weighted_clusters:
+                          clusters:
+                          - name: outbound|9080||productpage.istio.svc.cluster.local
+                            weight: 100
+                          total_weight: 100
+                          runtime_key_prefix: test
+                local_reply_config:
+                  mappers:
+                  - status_code: 200
+                    filter:
+                      metadata_filter:
+                        matcher:
+                          filter: envoy.lb
+                          path: 
+                          - key: canary
+                          value:
+                            string_match:
+                              exact: "true"
+                          invert: false
+                        match_if_key_not_found: true
+                    body: 
+                      inline_string: "test"
+                    body_format_override:
+                      text_format: "%LOCAL_REPLY_BODY%:%RESPONSE_CODE%:path=%REQ(:path)%\n" 
+                    headers_to_add:
+                    - header:
+                        key: test
+                        value: test
+                      append: true
+                  body_format:
+                    text_format: "%LOCAL_REPLY_BODY%:%RESPONSE_CODE%:path=%REQ(:path)%\n"      

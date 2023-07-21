@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: listener
+  namespace: istio 
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: LISTENER
+    match:   
+      listener:
+        name: 0.0.0.0_9080
+    patch:
+      operation: REMOVE

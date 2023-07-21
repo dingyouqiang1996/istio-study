@@ -1,0 +1,78 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: thrift-sample-server
+spec:
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        name: 10.68.153.249_9090    # sed -i .bak "s/\${thrift-sample-server-vip}/`kubectl get svc thrift-sample-server -n thrift -o=jsonpath='{.spec.clusterIP}'`/" istio/envoyfilter-thrift-proxy.yaml
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: REPLACE
+      value:
+        name: envoy.filters.network.thrift_proxy
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy
+          stat_prefix: "outbound|9090||thrift-sample-server.thrift.svc.cluster.local"
+          transport: AUTO_TRANSPORT
+          protocol: AUTO_PROTOCOL
+          thrift_filters:
+          - name: envoy.filters.thrift.router
+          route_config:
+            routes:
+            - match:
+                service_name: "org.aeraki.HelloService"
+                invert: true
+                headers:
+                - name: test
+                  present_match: false
+              route:
+                weighted_clusters:
+                  clusters:
+                    - name: "cluster123"
+                      weight: 100
+                      metadata_match:
+                        filter_metadata:
+                          envoy.lb:
+                            env: mark
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value: 
+        name: "cluster123"
+        type: STRICT_DNS
+        connect_timeout: 0.5s
+        lb_policy: ROUND_ROBIN
+        lb_subset_config:
+          fallback_policy: DEFAULT_SUBSET
+          default_subset:
+            env: "taobao"
+          subset_selectors:
+          - keys:
+            - env
+        load_assignment:
+          cluster_name: cluster123
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: thrift-sample-server.istio.svc.cluster.local
+                    port_value: 9090
+              metadata:
+                filter_metadata:
+                  envoy.lb:
+                    env: hema
+            - endpoint:
+                address:
+                  socket_address:
+                    address: thrift-sample-server.istio-2.svc.cluster.local
+                    port_value: 9090
+              metadata:
+                filter_metadata:
+                  envoy.lb:
+                    env: taobao

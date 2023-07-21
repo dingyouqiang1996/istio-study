@@ -1,0 +1,26 @@
+kind: HTTPRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: productpage
+  labels:
+    gateway: bookinfo
+spec:
+  gateways:
+    allow: All
+  hostnames: ["*"]
+  tls:
+    certificateRef:
+      name: bookinfo-gateway-secret-http
+      kind: Secret
+      group: core  
+  rules:
+  - matches:
+    - path:
+        type: Prefix
+        value: /productpage
+    - path:
+        type: Prefix
+        value: /static
+    forwardTo:
+    - serviceName: productpage
+      port: 9080

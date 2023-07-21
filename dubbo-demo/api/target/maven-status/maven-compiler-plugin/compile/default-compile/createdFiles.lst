@@ -1,0 +1,3 @@
+org\example\api\ITestService.class
+org\example\api\IGroupService.class
+org\example\api\IVersionService.class

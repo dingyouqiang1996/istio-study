@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: simple
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 31400 
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.network.postgres_proxy
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.network.postgres_proxy.v3.PostgresProxy
+          stat_prefix: postgre
+          enable_sql_parsing: true
+          terminate_ssl: false

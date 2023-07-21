@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+data:
+  config.yaml: |
+    domain: productpage-ratelimit
+    descriptors:
+      - key: test
+        value: "v1"
+        rate_limit:
+          unit: minute
+          requests_per_unit: 4
+      - key: test
+        rate_limit:
+          unit: minute
+          requests_per_unit: 10

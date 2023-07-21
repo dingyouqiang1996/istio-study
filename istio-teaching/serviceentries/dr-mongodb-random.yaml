@@ -1,0 +1,9 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: mymongodb
+spec:
+  host: mymongodb.demo
+  trafficPolicy:
+    loadBalancer:
+      simple: RANDOM

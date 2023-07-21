@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+
+package wind_power;
+
+service WindServer {
+    rpc wind_predict(Request) returns (Response) {
+        option (google.api.http) = {
+          get: "/predict"
+        };
+    }
+    
+    rpc send_data(Request) returns (Response) {
+        option (google.api.http) = {
+          post: "/send",
+          body: "*"
+        };
+    }
+}
+
+message Request {
+    string content = 1;
+}
+
+message Response {
+    string msg = 1;
+    int32 code = 2;
+}

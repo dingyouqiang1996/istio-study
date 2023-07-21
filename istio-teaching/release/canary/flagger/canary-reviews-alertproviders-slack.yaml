@@ -1,0 +1,9 @@
+apiVersion: flagger.app/v1beta1
+kind: AlertProvider
+metadata:
+  name: on-call
+spec:
+  type: slack
+  channel: test
+  username: test
+  address: https://hooks.slack.com/services/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

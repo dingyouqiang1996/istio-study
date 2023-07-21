@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: checkoutservice-vs
+spec:
+  hosts:
+  - "checkoutservice"
+  http:
+  - name: http-primary
+    route:
+    - destination:
+        host: checkoutservice
+        subset: v1
+        port: 
+          number: 5050
+      weight: 100
+    - destination:
+        host: checkoutservice
+        subset: v2
+        port: 
+          number: 5050
+      weight: 0

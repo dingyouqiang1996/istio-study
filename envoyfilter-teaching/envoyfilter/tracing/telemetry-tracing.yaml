@@ -1,0 +1,22 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: tracing
+spec:
+  tracing:
+  - customTags:
+      test1:
+        environment:
+          name: test1
+          defaultValue: test1    
+      test2:
+        header:
+          name: test2
+          defaultValue: test2
+      test3:
+        literal:
+          value: test3
+    providers:
+    - name: localtrace
+    randomSamplingPercentage: 30
+    

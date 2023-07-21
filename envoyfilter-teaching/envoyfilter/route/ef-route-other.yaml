@@ -1,0 +1,34 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  namespace: istio-system
+  name: route
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.router
+      patch:
+        operation: REPLACE
+        value:
+          name: envoy.filters.http.router
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+            suppress_envoy_headers: true
+            strict_check_headers:
+            - x-envoy-max-retries
+            - x-envoy-upstream-rq-timeout-ms
+            - x-envoy-upstream-rq-per-try-timeout-ms
+            - x-envoy-retry-grpc-on
+            - x-envoy-retry-on
+            respect_expected_rq_timeout: true
+            suppress_grpc_request_failure_code_stats: true

@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: cluster
+  namespace: istio-system 
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: CLUSTER
+    match:
+      cluster:
+        name: outbound|9080||productpage.istio.svc.cluster.local
+    patch:
+      operation: MERGE
+      value:
+         lb_policy: LEAST_REQUEST
+         least_request_lb_config:
+           choice_count: 2
+           active_request_bias:
+             default_value: 0.2
+           #slow_start_config:
+            # slow_start_window: 10s
+            # aggression:
+            #   default_value: 30

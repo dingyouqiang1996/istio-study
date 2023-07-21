@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: WorkloadGroup
+metadata:
+  name: httpd
+  namespace: vm-httpd
+spec:
+  metadata:
+    labels:
+      app: httpd
+      type: vm
+    annotations:
+      test: test
+  probe:
+    periodSeconds: 5
+    initialDelaySeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+    timeoutSeconds: 2
+    tcpSocket:
+      port: 80
+  template:
+    serviceAccount: sa-httpd
+    network: network2

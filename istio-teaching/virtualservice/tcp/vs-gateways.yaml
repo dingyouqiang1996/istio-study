@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: tcp-echo
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - tcp-echo-gateway
+  tcp:
+  - match:
+    - gateways:
+      - tcp-echo-gateway
+    route:
+    - destination:
+        host: tcp-echo
+        port:
+          number: 9000
+        subset: v2

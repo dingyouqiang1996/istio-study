@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-custom-bootstrap-config
+data:
+  custom_bootstrap.json: |
+    {
+      "layered_runtime": {
+        "layers": [
+          {
+            "name": "static-layer",
+            "static_layer": {
+              "envoy": {
+                "reloadable_features": {
+                  "experimental_matching_api": true
+                }
+              }
+            }
+          }
+        ]
+      }
+    }

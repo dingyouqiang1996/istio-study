@@ -1,0 +1,13 @@
+apiVersion: microservice.slime.io/v1alpha1
+kind: SmartLimiter
+metadata:
+  name: productpage
+spec:
+  sets:
+    _base:
+      descriptor:
+      - action:
+          fill_interval:
+            seconds: 60
+          quota: "1"
+        condition: '{{._base.cpu.sum}}>10'

@@ -1,0 +1,5 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: demo
+  installPackagePath: /root/istio-1.11.2/manifests

@@ -1,0 +1,14 @@
+kind: UDPRoute
+apiVersion: gateway.networking.k8s.io/v1alpha2
+metadata:
+  name: udp-listener
+spec:
+  parentRefs:
+  - name: udp
+    namespace: istio-system
+    kind: Gateway
+    group: gateway.networking.k8s.io
+  rules:
+  - backendRefs:
+    - name: udp-listener
+      port: 5005

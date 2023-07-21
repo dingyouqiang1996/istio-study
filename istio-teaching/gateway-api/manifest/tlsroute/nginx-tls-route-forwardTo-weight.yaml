@@ -1,0 +1,17 @@
+kind: TLSRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: nginx
+  labels:
+    gateway: bookinfo
+spec:
+  gateways:
+    allow: All
+  rules:
+  - forwardTo:
+    - serviceName: my-nginx
+      port: 443
+      weight: 50
+    - serviceName: my-nginx-v2
+      port: 443
+      weight: 50

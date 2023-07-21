@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job
+  labels:
+    app: pod-test
+    {{- include "reviews-v1.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    sidecar.istio.io/inject: "false"
+  namespace: default
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: job
+        image: busybox
+        command: ['wget']
+        args: ['reviews-v1-canary.istio:9080/reviews/0']

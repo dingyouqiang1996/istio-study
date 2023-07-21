@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+spec:
+  args:
+  - name: service-name
+  metrics:
+  - name: success-rate
+    interval: 60s
+    count: 5
+    successCondition: result[0] >= 0.5
+    failureLimit: 3
+    initialDelay: 30s
+    provider:
+      job:
+        spec:
+          backoffLimit: 1
+          template:
+            metadata:
+              annotations:
+                sidecar.istio.io/inject: “true”
+            spec:
+              containers:
+              - name: test
+                image: busybox
+                command: [wget]
+                args: ["http://192.168.229.134:32542/reviews/0"]
+              restartPolicy: Never

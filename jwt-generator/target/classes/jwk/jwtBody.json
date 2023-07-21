@@ -1,0 +1,21 @@
+{
+  "header": {
+    "kid": "DHFbpoIUqrY8t2zpA2qXfCmr5VO5ZEr4RzHU_-envvQ",
+    "typ": "JWT",
+    "alg": "RS256"
+  },
+  "body": {
+    "sub": "testing@secure.istio.io",
+    "scope": [
+      "scope1",
+      "scope2"
+    ],
+    "iss": "testing@secure.istio.io",
+    "exp": 1659837999,
+    "iat": 1656300608,
+    "group": [
+      "group1",
+      "group2"
+    ]
+  }
+}

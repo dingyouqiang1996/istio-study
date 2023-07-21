@@ -1,0 +1,29 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: simple
+spec:
+  workloadSelector:
+    labels:
+      app: tcp-echo
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        portNumber: 9000 
+        filterChain:
+          filter:
+            name: "envoy.filters.network.tcp_proxy"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.network.connection_limit
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.filters.network.connection_limit.v3.ConnectionLimit
+          stat_prefix: connectionLimit
+          max_connections: 1
+          delay: 1s
+          runtime_enabled:
+            default_value: true
+            runtime_key: connectionlimit.enabled

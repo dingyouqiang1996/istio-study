@@ -1,0 +1,12 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: WorkloadGroup
+metadata:
+  name: mongodb-2
+  namespace: vm-mongodb
+spec:
+  metadata:
+    labels:
+      app: mongodb
+  template:
+    ports:
+      mongo: 27017

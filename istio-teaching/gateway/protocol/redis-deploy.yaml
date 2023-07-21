@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: bcia
+    ms-name: redis
+  name: bcia-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bcia
+      ms-name: redis
+  template:
+    metadata:
+      labels:
+        app: bcia
+        ms-name: redis
+      name: bcia-redis
+      annotations:
+        sidecar.istio.io/statsInclusionRegexps: ".*"
+    spec:
+     containers:
+     - name: bcia-redis
+       image: redis:5.0.8
+       command:
+         - "redis-server"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector:
+    app: bcia
+    ms-name: redis
+  ports:
+  - port: 6379
+    targetPort: 6379

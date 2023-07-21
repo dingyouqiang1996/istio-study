@@ -1,0 +1,62 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: apply-to
+spec:
+  configPatches:
+  - applyTo: ROUTE_CONFIGURATION
+    match:
+      context: SIDECAR_OUTBOUND
+      routeConfiguration:
+        portNumber: 20001
+    patch:
+      operation: MERGE
+      value:
+        name: "20882"
+        virtualHosts:
+        - name: "mosn.io.dubbo.DemoService:20882"
+          domains:
+          - mosn.io.dubbo.DemoService
+          retryPolicy:
+            numRetries: 3
+          routes:
+          - match:
+              headers:
+              - name: "zone"
+                exactMatch: "gz01"
+            route:
+              timeout: 10s
+              weightedClusters:
+                clusters:
+                  - name: "outbound|20882|blue|mosn.io.dubbo.DemoService"
+                    weight: 10
+                  - name: "outbound|20882|green|mosn.io.dubbo.DemoService"
+                    weight: 90
+                totalWeight: 100
+              retryPolicy:
+                retryOn: "true"
+                numRetries: 2
+                perTryTimeout: 2s
+          - match:
+              prefix: "/"
+            route:
+              timeout: 10s
+              cluster: "outbound|20880||quasra.dubbo.proxy"
+              retryPolicy:
+                retryOn: "true"
+                numRetries: 2
+                perTryTimeout: 2s
+        - name: "mosn.io.dubbo.DemoService2:20882"
+          domains:
+          - mosn.io.dubbo.DemoService2
+          retryPolicy:
+            numRetries: 5
+          routes:
+          - match:
+              prefix: "/"
+            route:
+              timeout: 5s
+              cluster: "outbound|20882||mosn.io.dubbo.DemoService2"
+              retryPolicy:
+                numRetries: 3
+                perTryTimeout: 1s

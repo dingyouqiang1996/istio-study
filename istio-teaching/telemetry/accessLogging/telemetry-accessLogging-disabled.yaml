@@ -1,0 +1,12 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: telemetry-productpage
+spec:
+  selector:
+    matchLabels:
+      app: productpage
+  accessLogging:
+  - providers:
+    - name: envoy
+    disabled: true

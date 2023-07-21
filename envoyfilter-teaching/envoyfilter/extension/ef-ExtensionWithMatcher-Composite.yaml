@@ -1,0 +1,66 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: extension
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        name: 0.0.0.0_9080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value: 
+            name: composite
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.common.matching.v3.ExtensionWithMatcher
+              extension_config:
+                name: composite
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.composite.v3.Composite
+              matcher:
+                matcher_tree:
+                  input:
+                    name: request-headers
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.type.matcher.v3.HttpRequestHeaderMatchInput
+                      header_name: end-user
+                  exact_match_map:
+                    map:
+                      "mark":  
+                        action:
+                          name: composite-action
+                          typed_config:
+                            "@type": type.googleapis.com/envoy.extensions.filters.http.composite.v3.ExecuteFilterAction
+                            typed_config:
+                              name: http-fault
+                              typed_config:
+                                "@type": type.googleapis.com/envoy.extensions.filters.http.fault.v3.HTTPFault
+                                delay:
+                                  fixed_delay: 1s
+                                  percentage:
+                                    numerator: 100
+                                    denominator: HUNDRED
+                      "jason":  
+                        action:
+                          name: composite-action
+                          typed_config:
+                            "@type": type.googleapis.com/envoy.extensions.filters.http.composite.v3.ExecuteFilterAction
+                            typed_config:
+                              name: http-fault
+                              typed_config:
+                                "@type": type.googleapis.com/envoy.extensions.filters.http.fault.v3.HTTPFault
+                                abort:
+                                  http_status: 503
+                                  percentage:
+                                    numerator: 100
+                                    denominator: HUNDRED

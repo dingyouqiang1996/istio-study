@@ -1,0 +1,82 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: httpconnectionmanager
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                route_config:
+                  name: test
+                  virtual_hosts:
+                  - name: test
+                    domains:
+                    - "*"
+                    routes:
+                    - name: testroute
+                      match: 
+                        prefix: /product
+                      route:
+                        weighted_clusters:
+                          clusters:
+                          - name: outbound|9080||productpage.istio.svc.cluster.local
+                            weight: 100
+                          total_weight: 100
+                          runtime_key_prefix: test
+                add_user_agent: true
+                server_name: envoy
+                server_header_transformation: OVERWRITE
+                scheme_header_transformation:
+                  scheme_to_overwrite: http
+                max_request_headers_kb: 60
+                stream_idle_timeout: 5m
+                request_timeout: 1m
+                request_headers_timeout: 30s
+                drain_timeout: 10s
+                delayed_close_timeout: 1000ms
+                use_remote_address: true
+                xff_num_trusted_hops: 3
+                internal_address_config:
+                  unix_sockets: true
+                skip_xff_append: false
+                via: server
+                generate_request_id: true
+                preserve_external_request_id: true
+                always_set_request_id_in_response: true
+                forward_client_cert_details: SANITIZE_SET
+                set_current_client_cert_details:
+                  subject: true
+                  cert: true
+                  chain: true
+                  dns: true
+                  uri: true
+                proxy_100_continue: true
+                normalize_path: true
+                merge_slashes: true
+                request_id_extension:
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.request_id.uuid.v3.UuidRequestIdConfig
+                    pack_trace_reason: false
+                    use_request_id_for_trace_sampling: true
+                path_with_escaped_slashes_action: IMPLEMENTATION_SPECIFIC_DEFAULT
+                strip_matching_host_port: true
+                #strip_any_host_port: true
+                stream_error_on_invalid_http_message: true
+                strip_trailing_host_dot: true
+                
+                        

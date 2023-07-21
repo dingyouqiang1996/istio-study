@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: tracing
+spec:
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                tracing:
+                  client_sampling:
+                    value: 40
+                  random_sampling:
+                    value: 50
+                  overall_sampling:
+                    value: 45 
+                  custom_tags:
+                  - tag: test1
+                    literal:
+                      value: test1
+                  - tag: test2
+                    environment:
+                      name: myenv
+                      default_value: test2
+                  - tag: test3
+                    request_header:
+                      name: test3
+                      default_value: test3
+                  - tag: test4
+                    metadata:
+                      kind: 
+                        request: {}
+                      metadata_key:
+                        key: envoy.lb
+                        path:
+                        - key: test4
+                      default_value: test4

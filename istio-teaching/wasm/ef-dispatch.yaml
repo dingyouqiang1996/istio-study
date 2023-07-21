@@ -1,0 +1,63 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: dispatch
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: LISTENER
+    patch:
+      operation: ADD
+      value:
+          name: staticreply
+          address:
+            socket_address:
+              address: 127.0.0.1
+              port_value: 8099
+          filter_chains:
+          - filters:
+            - name: envoy.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                codec_type: AUTO
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains:
+                        - "*"
+                      routes:
+                        - match:
+                            prefix: "/ok"
+                          direct_response:
+                            status: 200
+                            body:
+                              inline_string: "example body\n"
+                        - match:
+                            prefix: "/fail"
+                          direct_response:
+                            status: 503
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+  - applyTo: CLUSTER
+    patch:
+      operation: ADD
+      value: 
+          name: web_service
+          connect_timeout: 0.25s
+          type: STATIC
+          lb_policy: ROUND_ROBIN
+          load_assignment:
+            cluster_name: mock_service
+            endpoints:
+            - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 8099

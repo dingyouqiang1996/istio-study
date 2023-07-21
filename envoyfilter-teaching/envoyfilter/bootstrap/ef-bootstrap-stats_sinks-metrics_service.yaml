@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ef-bootstrap
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: BOOTSTRAP
+    patch:
+      operation: MERGE
+      value:
+          stats_sinks:
+          - name: metrics_service
+            typed_config:
+              "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
+              transport_api_version: V3
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: test-metrics-service
+                timeout: 60s
+              report_counters_as_deltas: true
+              emit_tags_as_labels: true

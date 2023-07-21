@@ -1,0 +1,55 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: filter-ratelimit
+  namespace: istio
+spec:
+  workloadSelector:
+    labels:
+      app: mysqldb
+      version: v1
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        listener:
+          portNumber: 3306
+          filterChain:
+            filter:
+              name: "envoy.filters.network.tcp_proxy"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.network.ratelimit
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.network.ratelimit.v3.RateLimit
+            domain: mysql-ratelimit
+            failure_mode_deny: true
+            descriptors:
+            - PATH
+            rate_limit_service:
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: rate_limit_cluster
+                timeout: 10s
+              transport_api_version: V3
+    - applyTo: CLUSTER
+      match:
+        cluster:
+          service: ratelimit.istio.svc.cluster.local
+      patch:
+        operation: ADD
+        value:
+          name: rate_limit_cluster
+          type: STRICT_DNS
+          connect_timeout: 10s
+          lb_policy: ROUND_ROBIN
+          http2_protocol_options: {}
+          load_assignment:
+            cluster_name: rate_limit_cluster
+            endpoints:
+            - lb_endpoints:
+              - endpoint:
+                  address:
+                     socket_address:
+                      address: ratelimit.istio.svc.cluster.local
+                      port_value: 8081

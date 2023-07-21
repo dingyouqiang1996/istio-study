@@ -1,0 +1,66 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: wasm
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: LISTENER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        name: virtualInbound
+    patch:
+      operation: MERGE
+      value:
+        access_log:
+          - filter:
+              response_flag_filter:
+                flags:
+                - NR
+            name: envoy.access_loggers.wasm
+            typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.access_loggers.wasm.v3.WasmAccessLog
+                config:
+                  name: my_plugin
+                  configuration:
+                    "@type": type.googleapis.com/google.protobuf.StringValue
+                    value: |
+                      {}
+                  vm_config:
+                    runtime: "envoy.wasm.runtime.v8"
+                    code:
+                      local:
+                        filename: /var/local/lib/wasm-filters/main.wasm
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        name: virtualInbound
+        filterChain:
+          destinationPort: 9080
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+    patch:
+      operation: MERGE
+      value:
+              name: envoy.filters.network.http_connection_manager
+              typedConfig:
+                '@type': type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                access_log:
+                  - name: envoy.access_loggers.wasm
+                    typedConfig:
+                        '@type': type.googleapis.com/envoy.extensions.access_loggers.wasm.v3.WasmAccessLog
+                        config:
+                          name: my_plugin
+                          configuration:
+                            "@type": type.googleapis.com/google.protobuf.StringValue
+                            value: |
+                              {}
+                          vm_config:
+                            runtime: "envoy.wasm.runtime.v8"
+                            code:
+                              local:
+                                filename: /var/local/lib/wasm-filters/main.wasm

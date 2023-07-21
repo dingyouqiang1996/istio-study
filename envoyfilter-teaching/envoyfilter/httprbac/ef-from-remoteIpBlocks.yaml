@@ -1,0 +1,42 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+spec:
+  workloadSelector:
+    labels:
+      app: istio-ingressgateway
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:         
+          name: envoy.filters.http.rbac
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC
+            rules:
+              action: DENY
+              policies:
+                ns[istio-system]-policy[ingressgateway]-rule[0]:
+                  permissions:
+                  - andRules:
+                      rules:
+                      - any: true
+                  principals:
+                  - andIds:
+                      ids:
+                      - orIds:
+                          ids:
+                          - remoteIp:
+                              addressPrefix: 192.168.198.1
+                              prefixLen: 32
+            shadowRulesStatPrefix: istio_dry_run_allow_

@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: cluster-remove
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+  - applyTo: FILTER_CHAIN
+    match:
+      listener:
+        filterChain:
+          transportProtocol: raw_buffer
+          destinationPort: 9080
+    patch:
+      operation: REMOVE

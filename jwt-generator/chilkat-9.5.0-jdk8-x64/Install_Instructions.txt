@@ -1,0 +1,2 @@
+Please see the install instructions at:
+http://www.chilkatsoft.com/installJavaWindows.asp

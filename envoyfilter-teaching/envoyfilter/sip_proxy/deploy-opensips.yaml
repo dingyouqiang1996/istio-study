@@ -1,0 +1,67 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opensips-v1
+  labels:
+    app: opensips
+spec:
+  selector:
+    matchLabels:
+      app: opensips
+      version: v1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: opensips
+        version: v1
+    spec:
+      containers:
+        - name: opensips
+          image: opensips/opensips:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5060
+              protocol: UDP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opensips-v2
+  labels:
+    app: opensips
+spec:
+  selector:
+    matchLabels:
+      app: opensips
+      version: v2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: opensips
+        version: v2
+    spec:
+      containers:
+        - name: opensips
+          image: opensips/opensips:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5060
+              protocol: UDP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opensips
+spec:
+  selector:
+    app: opensips
+  ports:
+    - name: udp-opensips
+      protocol: UDP
+      port: 5060
+      targetPort: 5060
+---

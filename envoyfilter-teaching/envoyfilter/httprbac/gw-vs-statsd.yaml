@@ -1,0 +1,54 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: statsd
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "demo.grafana.com"
+    - "demo.influxdb.com"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: statsd-grafana
+spec:
+  hosts:
+    - "demo.grafana.com"
+  gateways:
+  - statsd
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: statsd-influxdb-grafana-svc.istio.svc.cluster.local
+        port:
+          number: 3003
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: statsd-influxdb
+spec:
+  hosts:
+    - "demo.influxdb.com"
+  gateways:
+  - statsd
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: statsd-influxdb-grafana-svc.istio.svc.cluster.local
+        port:
+          number: 3004
+

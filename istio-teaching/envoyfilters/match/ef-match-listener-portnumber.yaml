@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: match
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+  - applyTo: LISTENER
+    match:
+      listener:
+        portNumber: 8080
+    patch:
+      operation: MERGE
+      value:
+        listener_filters:
+        - name: envoy.filters.listener.original_src
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.listener.original_src.v3.OriginalSrc
+        - name: envoy.filters.listener.tls_inspector

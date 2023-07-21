@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: vs-mysql
+spec:
+  hosts:
+  - mysql.vm.demo
+  gateways:
+  - istio-eastwest
+  - mesh
+  http:
+  - match:
+    - gateways:
+      - mesh
+      port: 3306
+    route:
+    - destination:
+        host: istio-eastwestgateway.istio-system.svc.cluster.local
+        port:
+          number: 3306
+      weight: 100
+  - match:
+    - gateways:
+      - istio-eastwest
+      port: 3306
+    route:
+    - destination:
+        host: mysql.vm.demo
+        port:
+          number: 3306
+      weight: 100

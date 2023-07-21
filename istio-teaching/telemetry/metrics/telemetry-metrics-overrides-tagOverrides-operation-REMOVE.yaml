@@ -1,0 +1,17 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: telemetry-productpage
+spec:
+  selector:
+    matchLabels:
+      app: productpage
+  metrics:
+  - providers:
+    - name: prometheus
+    overrides:
+    - match:
+        customMetric: requests_total
+      tagOverrides:
+        source_version: 
+          operation: REMOVE

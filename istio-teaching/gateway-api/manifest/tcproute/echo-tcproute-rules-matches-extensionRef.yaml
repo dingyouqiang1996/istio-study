@@ -1,0 +1,18 @@
+kind: TCPRoute
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: echo
+  labels:
+    gateway: echo
+spec:
+  gateways:
+    allow: All
+  rules:
+  - forwardTo:
+    - serviceName: tcp-echo
+      port: 9000
+    matches:
+    - extensionRef:
+        group: core
+        kind: test
+        name: test

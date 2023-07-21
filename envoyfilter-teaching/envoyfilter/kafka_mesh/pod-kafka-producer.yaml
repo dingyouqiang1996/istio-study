@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kafka-producer
+  labels:
+    name: kafka-producer
+spec:
+  containers:
+  - name: kafka
+    tty: true
+    stdin: true
+    image: strimzi/kafka:0.12.2-kafka-2.2.1
+    command:
+    - bin/kafka-console-producer.sh
+    args:
+    - --broker-list 127.0.0.1:29092
+    - --topic my-topic

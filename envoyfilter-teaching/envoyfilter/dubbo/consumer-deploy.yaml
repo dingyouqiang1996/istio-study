@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-hello-consumer
+  labels:
+    app: dubbo-hello-consumer
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-hello-consumer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dubbo-hello-consumer
+    spec:
+      containers:
+        - name: dubbo-hello-consumer
+          image: registry.cn-beijing.aliyuncs.com/hxpdocker/dubbo-hello-consumer:1.0
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dubbo-hello-consumer
+spec:
+ selector:  
+   app: dubbo-hello-consumer
+ type: ClusterIP
+ ports:
+ -  name: http
+    port: 8081      
+    targetPort: 8081
+

@@ -1,0 +1,41 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rbac
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  priority: 20
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: GATEWAY
+      listener:
+        portNumber: 8080
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+            subFilter:
+              name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:         
+          name: envoy.filters.http.rbac
+          typedConfig:
+            '@type': type.googleapis.com/envoy.extensions.filters.http.rbac.v3.RBAC
+            rules:
+              action: DENY
+              policies:
+                "product-viewer":
+                  permissions:
+                  - metadata:
+                      filter: envoy.filters.http.jwt_authn
+                      path:
+                      - key: my_payload
+                      - key: iss
+                      value: 
+                        string_match:
+                          exact: "testing@secure.istio.io"
+                  principals:
+                  - any: true

@@ -1,0 +1,37 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: fault
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+      version: v1
+  configPatches:
+  - applyTo: HTTP_ROUTE
+    match:
+      context: SIDECAR_INBOUND
+      routeConfiguration:
+        vhost:
+          name: "inbound|http|9080"
+          route:
+            action: ANY
+    patch:
+      operation: MERGE
+      value:
+                typed_per_filter_config:
+                  envoy.filters.http.fault:
+                    '@type': type.googleapis.com/envoy.extensions.filters.http.fault.v3.HTTPFault
+                    abort:
+                      httpStatus: 500
+                      percentage:
+                        denominator: MILLION
+                        numerator: 1000000
+                    response_rate_limit:
+                      fixed_limit:
+                        limit_kbps: 1
+                      percentage:
+                        denominator: MILLION
+                        numerator: 1000000
+                    downstream_nodes: 
+                    - router~172.20.2.62~istio-ingressgateway-d8859589f-gp4js.istio-system~istio-system.svc.cluster.local
