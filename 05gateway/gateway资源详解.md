@@ -1,10 +1,10 @@
 学习目标
 
-![1597990624(1)](images\1597990624(1).jpg)
+![1597990624(1)](images\\1597990624(1).jpg)
 
 # 5-1什么是gateway
 
-![1597990869(1)](images\1597990869(1).jpg)
+![1597990869(1)](images\\1597990869(1).jpg)
 
  在Kubernetes环境中，Kubernetes Ingress用于配置需要在集群外部公开的服务。但是在Istio服务网格中，更好的方法是使用新的配置模型，即Istio Gateway。Gateway允许将Istio流量管理的功能应用于进入集群的流量。 
 
@@ -129,7 +129,7 @@ kubectl edit vs  bookinfo -n istio-system
 
 生成配置
 
-![1627099539(1)](images\1627099539(1).jpg)
+![1627099539(1)](images\\1627099539(1).jpg)
 
 #### 具体域名：
 
@@ -317,7 +317,7 @@ for: "vs-bookinfo-hosts-star-mix-error.yaml": admission webhook "validation.isti
 
 **vs和gw域名有效值是交叉关系**
 
-![1627099760(1)](images\1627099760(1).jpg)
+![1627099760(1)](images\\1627099760(1).jpg)
 
 
 
@@ -376,7 +376,7 @@ kubectl apply -f vs-bookinfo-hosts-star.yaml -n istio-system
 访问http://bookinfo.demo:31110/productpage成功
 ```
 
-![1627100070(1)](images\1627100070(1).jpg)
+![1627100070(1)](images\\1627100070(1).jpg)
 
 #### 混合域名
 
@@ -426,7 +426,7 @@ spec:
           number: 9080
 ```
 
-![1627100281(1)](images\1627100281(1).jpg)
+![1627100281(1)](images\\1627100281(1).jpg)
 
 ```
 gateway/vs-bookinfo-hosts-mix.yaml
@@ -462,7 +462,7 @@ spec:
 
 访问http://mypage.com/productpage 成功用了externalIp和80端口
 
-![1627100449(1)](images\1627100449(1).jpg)
+![1627100449(1)](images\\1627100449(1).jpg)
 
 ### 5-3name 
 
@@ -495,7 +495,7 @@ proxy配置暂时找不到这个配置
 | Field    | Type   | Description                                                  | Required |
 | -------- | ------ | ------------------------------------------------------------ | -------- |
 | number   | uint32 | 一个有效的端口号                                             | 是       |
-| protocol | string | 所使用的协议，支持HTTP\|HTTPS\|GRPC\|HTTP2\|MONGO\|TCP\|TLS. | 是       |
+| protocol | string | 所使用的协议，支持HTTP\\|HTTPS\|GRPC\|HTTP2\|MONGO\|TCP\|TLS. | 是       |
 | name     | string | 给端口分配一个名称                                           | 是       |
 
 istio支持的协议：
@@ -512,7 +512,7 @@ istio支持的协议：
 - `tls`
 - `udp`
 
-\* These protocols are disabled by default to avoid accidentally enabling experimental features. To enable them, configure the corresponding Pilot [environment variables](https://istio.io/latest/docs/reference/commands/pilot-discovery/#envvars).
+\\* These protocols are disabled by default to avoid accidentally enabling experimental features. To enable them, configure the corresponding Pilot [environment variables](https://istio.io/latest/docs/reference/commands/pilot-discovery/#envvars).
 
 #### 5-4http
 
@@ -572,11 +572,11 @@ spec:
 
 3访问浏览器
 
-![1627102638(1)](images\1627102638(1).jpg)
+![1627102638(1)](images\\1627102638(1).jpg)
 
 
 
-![1627102698(1)](images\1627102698(1).jpg)
+![1627102698(1)](images\\1627102698(1).jpg)
 
 
 
@@ -654,9 +654,9 @@ spec:
 
 4访问浏览器
 
-![1627103656(1)](images\1627103656(1).jpg)
+![1627103656(1)](images\\1627103656(1).jpg)
 
-![1627103739(1)](images\1627103739(1).jpg)
+![1627103739(1)](images\\1627103739(1).jpg)
 
 
 
@@ -761,9 +761,9 @@ spec:
 
 telnet 10.68.12.164 31400
 
-![1627105644(1)](images\1627105644(1).jpg)
+![1627105644(1)](images\\1627105644(1).jpg)
 
-![1627105749(1)](images\1627105749(1).jpg)
+![1627105749(1)](images\\1627105749(1).jpg)
 
 
 
@@ -834,9 +834,9 @@ curl -sk --http2  http://192.168.229.134:32385/productpage
 
 测试成功
 
-![1627106226(1)](images\1627106226(1).jpg)
+![1627106226(1)](images\\1627106226(1).jpg)
 
-![1627106284(1)](images\1627106284(1).jpg)
+![1627106284(1)](images\\1627106284(1).jpg)
 
 
 
@@ -1022,11 +1022,11 @@ spec:
 
 效果：
 
-![1](D:\公众号\收费文章\不懂envoyfilter你敢说精通istio系列\17statistics\1.jpg)
+![1](D:\\公众号\收费文章\不懂envoyfilter你敢说精通istio系列\17statistics\1.jpg)
 
 
 
-![2](D:\公众号\收费文章\不懂envoyfilter你敢说精通istio系列\17statistics\2.jpg)
+![2](D:\\公众号\收费文章\不懂envoyfilter你敢说精通istio系列\17statistics\2.jpg)
 
 
 
@@ -1144,9 +1144,9 @@ kubectl edit svc istio-ingressgateway -n istio-system
 
 mongo --host 192.168.198.154 --port 30150
 
-![1627182880(1)](images\1627182880(1).jpg)
+![1627182880(1)](images\\1627182880(1).jpg)
 
-![1627183141(1)](images\1627183141(1).jpg)
+![1627183141(1)](images\\1627183141(1).jpg)
 
 
 
@@ -1219,9 +1219,9 @@ spec:
 
 openssl s_client -connect bookinfo.com:15443 -servername bookinfo.com
 
-![1627183247(1)](images\1627183247(1).jpg)
+![1627183247(1)](images\\1627183247(1).jpg)
 
-![1627183316(1)](images\1627183316(1).jpg)
+![1627183316(1)](images\\1627183316(1).jpg)
 
 
 
@@ -1359,11 +1359,11 @@ kubectl set env deploy istiod -n istio-system PILOT_ENABLE_MYSQL_FILTER=true
 
  mysql -h 192.168.198.154 --port 37031 -uroot -p
 
-![1627183491(1)](images\1627183491(1).jpg)
+![1627183491(1)](images\\1627183491(1).jpg)
 
 
 
-![1627183541(1)](images\1627183541(1).jpg)
+![1627183541(1)](images\\1627183541(1).jpg)
 
 #### 5-11redis
 
@@ -1475,11 +1475,11 @@ redis-cli -h 192.168.198.154 -p 29525
 
 #### 
 
-![1627183717(1)](images\1627183717(1).jpg)
+![1627183717(1)](images\\1627183717(1).jpg)
 
 
 
-![1627183763(1)](images\1627183763(1).jpg)
+![1627183763(1)](images\\1627183763(1).jpg)
 
 #### 5-12grpc-web
 
@@ -1667,9 +1667,9 @@ http://192.168.198.154:30986/
 
 
 
-![1627184200(1)](images\1627184200(1).jpg)
+![1627184200(1)](images\\1627184200(1).jpg)
 
-![1627184267(1)](images\1627184267(1).jpg)
+![1627184267(1)](images\\1627184267(1).jpg)
 
 
 
@@ -1743,13 +1743,13 @@ http://192.168.198.199/productpage
 
 端口没法转
 
-![1627185801(1)](images\1627185801(1).jpg)
+![1627185801(1)](images\\1627185801(1).jpg)
 
 
 
-![1627185734(1)](images\1627185734(1).jpg)
+![1627185734(1)](images\\1627185734(1).jpg)
 
-![1627186092](images\1627186092.jpg)
+![1627186092](images\\1627186092.jpg)
 
 
 
@@ -1943,11 +1943,11 @@ spec:
 
  https://nginx.example.com:39329/ 
 
-![1627190483(1)](images\1627190483(1).jpg)
+![1627190483(1)](images\\1627190483(1).jpg)
 
 
 
-![1627190543(1)](images\1627190543(1).jpg)
+![1627190543(1)](images\\1627190543(1).jpg)
 
 **没有证书是passthough**
 
@@ -2015,9 +2015,9 @@ spec:
 
 3访问 https://bookinfo.demo:39329/productpage 
 
-![1627194952(1)](images\1627194952(1).jpg)
+![1627194952(1)](images\\1627194952(1).jpg)
 
-![1627195019(1)](images\1627195019(1).jpg)
+![1627195019(1)](images\\1627195019(1).jpg)
 
 
 
@@ -2104,11 +2104,11 @@ spec:
 
  curl -v -HHost:bookinfo.example.com --resolve "bookinfo.example.com:39329:192.168.198.154"  --cacert ./example.com.crt --cert ./client.example.com.crt --key ./client.example.com.key  "https://bookinfo.example.com:39329/productpage" 
 
-![1627195421(1)](images\1627195421(1).jpg)
+![1627195421(1)](images\\1627195421(1).jpg)
 
 
 
-![1627195527(1)](images\1627195527(1).jpg)
+![1627195527(1)](images\\1627195527(1).jpg)
 
 ###### mutual-2
 
@@ -2205,7 +2205,7 @@ spec:
 
 传统的 ingress gateway 承载的是南北流量 (server-client)，这里的 ingress gateway 属于网格内部流量，承载的是东西流量 (server-server)。设置 AUTO_PASSTHROUGH，可以允许服务无需配置 VirtualService，而直接使用 TLS 中的 SNI 值来表示 upstream，服务相关的 service/subset/port 都可以编码到 SNI 内容中。
 
-![arch (1)](images\arch (1).jpg)
+![arch (1)](images\\arch (1).jpg)
 
 
 
@@ -2240,15 +2240,15 @@ mkdir -p certs
  make -f ../tools/certs/Makefile.selfsigned.mk cluster2-cacerts
  scp
  kubectl create namespace istio-system
- kubectl create secret generic cacerts -n istio-system \
-      --from-file=cluster1/ca-cert.pem \
-      --from-file=cluster1/ca-key.pem \
-      --from-file=cluster1/root-cert.pem \
+ kubectl create secret generic cacerts -n istio-system \\
+      --from-file=cluster1/ca-cert.pem \\
+      --from-file=cluster1/ca-key.pem \\
+      --from-file=cluster1/root-cert.pem \\
       --from-file=cluster1/cert-chain.pem
- kubectl create secret generic cacerts -n istio-system \
-      --from-file=cluster2/ca-cert.pem \
-      --from-file=cluster2/ca-key.pem \
-      --from-file=cluster2/root-cert.pem \
+ kubectl create secret generic cacerts -n istio-system \\
+      --from-file=cluster2/ca-cert.pem \\
+      --from-file=cluster2/ca-key.pem \\
+      --from-file=cluster2/root-cert.pem \\
       --from-file=cluster2/cert-chain.pem
 ```
 
@@ -2426,7 +2426,7 @@ spec:
 
 curl -v -HHost:bookinfo.example.com --resolve "bookinfo.example.com:39329:192.168.198.154"  --cacert example.com.crt  "https://bookinfo.example.com:39329/productpage"
 
-![1627196479(1)](images\1627196479(1).jpg)
+![1627196479(1)](images\\1627196479(1).jpg)
 
 
 
@@ -2499,11 +2499,11 @@ spec:
 
 4访问 https://bookinfo.demo:39329/productpage 
 
-![1627274201](images\1627274201.jpg)
+![1627274201](images\\1627274201.jpg)
 
 
 
-![1627274270(1)](images\1627274270(1).jpg)
+![1627274270(1)](images\\1627274270(1).jpg)
 
 #### 5-16caCertificates
 
@@ -2592,9 +2592,9 @@ spec:
 
  curl -v -HHost:bookinfo.example.com --resolve "bookinfo.example.com:39329:192.168.198.154"  --cacert ./example.com.crt --cert ./client.example.com.crt --key ./client.example.com.key  "https://bookinfo.example.com:39329/productpage" 
 
-![1627274674(1)](images\1627274674(1).jpg)
+![1627274674(1)](images\\1627274674(1).jpg)
 
-![1627274717(1)](images\1627274717(1).jpg)
+![1627274717(1)](images\\1627274717(1).jpg)
 
 
 
@@ -2651,7 +2651,7 @@ spec:
 
 
 
-![1627274924(1)](images\1627274924(1).jpg)
+![1627274924(1)](images\\1627274924(1).jpg)
 
 
 
@@ -2665,7 +2665,7 @@ spec:
 | TLSV1_2  | TLS 1.2         |
 | TLSV1_3  | TLS 1.3         |
 
-![1617595703103](images\1617595703103.png)
+![1617595703103](images\\1617595703103.png)
 
 ##### TLS_AUTO
 
@@ -2693,7 +2693,7 @@ spec:
       maxProtocolVersion: TLS_AUTO
 ```
 
-![1627275321(1)](images\1627275321(1).jpg)
+![1627275321(1)](images\\1627275321(1).jpg)
 
 
 
@@ -2723,13 +2723,13 @@ spec:
       maxProtocolVersion: TLSV1_0
 ```
 
-![1617596315271](images\1617596315271.png)
+![1617596315271](images\\1617596315271.png)
 
 tls1.0被废弃
 
 
 
-![1627275428(1)](images\1627275428(1).jpg)
+![1627275428(1)](images\\1627275428(1).jpg)
 
 ##### TLSV1_0  - TLSV1_3
 
@@ -2757,9 +2757,9 @@ spec:
       maxProtocolVersion: TLSV1_3
 ```
 
-![1627275507(1)](images\1627275507(1).jpg)
+![1627275507(1)](images\\1627275507(1).jpg)
 
-![1627275543(1)](images\1627275543(1).jpg)
+![1627275543(1)](images\\1627275543(1).jpg)
 
 
 
@@ -2837,11 +2837,11 @@ https://bookinfo.com:37000/productpage
 
 
 
-![1627275816(1)](images\1627275816(1).jpg)
+![1627275816(1)](images\\1627275816(1).jpg)
 
 ## 6http3案例
 
-![1648250942(1)](images\1648250942(1).jpg)
+![1648250942(1)](images\\1648250942(1).jpg)
 
 
 
@@ -3045,7 +3045,7 @@ curl -svk --http2 --resolve httpbin.quic-corp.com:31805:192.168.229.128 https://
     "X-B3-Traceid": "9a3ce75f175273360a5359cd0f3e5983", 
     "X-Envoy-Attempt-Count": "1", 
     "X-Envoy-Internal": "true", 
-    "X-Forwarded-Client-Cert": "By=spiffe://cluster.local/ns/httpbin/sa/httpbin;Hash=4ee32a2457c6acdc280580b014dce248d7af449724d817dd34ef265d2a259871;Subject=\"\";URI=spiffe://cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+    "X-Forwarded-Client-Cert": "By=spiffe://cluster.local/ns/httpbin/sa/httpbin;Hash=4ee32a2457c6acdc280580b014dce248d7af449724d817dd34ef265d2a259871;Subject=\\"\";URI=spiffe://cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
   }
 }
 * Connection #0 to host httpbin.quic-corp.com left intact
@@ -3054,7 +3054,7 @@ curl -svk --http2 --resolve httpbin.quic-corp.com:31805:192.168.229.128 https://
 
 
 
-![1648113510(1)](images\1648113510(1).jpg)
+![1648113510(1)](images\\1648113510(1).jpg)
 
 
 
